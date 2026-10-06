@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SIRIF - Riesgo de Incendios Forestales</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        #map { flex: 1; height: 100vh; }
+        #panel {
+            width: 400px; padding: 25px; background: #1e293b; color: #fff;
+            overflow-y: auto; box-shadow: -4px 0 10px rgba(0,0,0,0.3);
+        }
+        #panel h1 { font-size: 1.4rem; margin-bottom: 5px; color: #38bdf8; }
+        #panel .subtitle { font-size: 0.85rem; color: #94a3b8; margin-bottom: 25px; }
+        .section-title {
+            font-size: 0.75rem; text-transform: uppercase; color: #94a3b8;
+            margin: 20px 0 10px 0; border-bottom: 1px solid #334155; padding-bottom: 5px;
+        }
+        #resultado { display: none; }
+        .zona-nombre { font-size: 1.5rem; font-weight: bold; margin-bottom: 15px; }
+        .variable-row {
+            display: flex; justify-content: space-between; padding: 8px 0;
+            border-bottom: 1px solid #334155; font-size: 0.9rem;
+        }
+        .variable-row span:first-child { color: #94a3b8; }
+        .variable-row span:last-child { font-weight: 600; color: #e2e8f0; }
+        .riesgo-badge {
+            display: inline-block; padding: 12px 30px; border-radius: 8px;
+            font-size: 1.3rem; font-weight: bold; margin: 15px 0; letter-spacing: 2px;
+        }
+        .riesgo-BAJO { background: #16a34a; color: #fff; }
+        .riesgo-MEDIO { background: #ea580c; color: #fff; }
+        .riesgo-ALTO { background: #dc2626; color: #fff; }
+        .puntaje { font-size: 0.9rem; color: #94a3b8; margin-bottom: 15px; }
+        .placeholder {
+            text-align: center; color: #64748b; padding: 40px 20px; font-size: 0.9rem; line-height: 1.6;
+        }
+        .loading { text-align: center; padding: 30px; color: #38bdf8; }
+        .spinner {
+            border: 3px solid #334155; border-top: 3px solid #38bdf8;
+            border-radius: 50%; width: 30px; height: 30px; margin: 0 auto 15px;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { 100% { transform: rotate(360deg); } }
+        .error { background: #7f1d1d; padding: 15px; border-radius: 8px; font-size: 0.85rem; }
+        .instruccion {
+            background: #0f172a; padding: 15px; border-radius: 8px;
+            font-size: 0.85rem; line-height: 1.6; color: #cbd5e1;
+        }
+        .instruccion code {
+            background: #1e293b; padding: 2px 6px; border-radius: 4px; color: #38bdf8;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+
+    <div id="panel">
+        <h1>SIRIF</h1>
+        <p class="subtitle">Sistema Inteligente de Riesgo de Incendios Forestales</p>
+
+        <div id="placeholder" class="placeholder">
+             Haz clic en una comuna del mapa<br>
+            para consultar su nivel de riesgo
+        </div>
+
+        <div id="loading" class="loading" style="display:none;">
+            <div class="spinner"></div>
+            Consultando...
+        </div>
+
+        <div id="resultado">
+            <div class="section-title">Zona consultada</div>
+            <div class="zona-nombre" id="zona-nombre">—</div>
+
+            <div class="section-title">Nivel de riesgo</div>
+            <div id="riesgo-container"></div>
+
+            <div class="section-title">Variables consideradas</div>
+            <div id="variables"></div>
+        </div>
+
+        <div id="error" class="error" style="display:none;"></div>
+
+        <div class="section-title">Instrucciones</div>
+        <div class="instruccion">
+            Comunas disponibles:<br>
+            • Quilpué<br>
+            • Viña del Mar<br>
+            • Valparaíso<br><br>
+            Hacé clic en cualquier marcador del mapa para consultar el riesgo.
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>
+        // === Configuración del mapa ===
+        const map = L.map('map').setView([-33.05, -71.5], 10);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap',
+            maxZoom: 18
+        }).addTo(map);
+
+        // === Comunas disponibles con coordenadas ===
+        const COMUNAS = [
+            { id: 'quilpue', nombre: 'Quilpué', lat: -33.0486, lng: -71.4425 },
+            { id: 'vina_del_mar', nombre: 'Viña del Mar', lat: -33.0245, lng: -71.5518 },
+            { id: 'valparaiso', nombre: 'Valparaíso', lat: -33.0472, lng: -71.6127 }
+        ];
+
+        // === Marcadores en el mapa ===
+        COMUNAS.forEach(comuna => {
+            const marker = L.marker([comuna.lat, comuna.lng]).addTo(map);
+            marker.bindPopup(`<b>${comuna.nombre}</b><br>Haz clic para consultar`);
+            marker.on('click', () => consultarRiesgo(comuna));
+        });
+
+        // === Función principal: consultar riesgo ===
+        async function consultarRiesgo(comuna) {
+            mostrarLoading();
+
+            try {
+                // 1. Obtener variables del Data Service (vía Gateway)
+                const resDatos = await fetch(`/api/datos/${comuna.id}`);
+                if (!resDatos.ok) throw new Error('Error al obtener datos');
+                const datos = await resDatos.json();
+
+                // 2. Clasificar riesgo en el Risk Service (vía Gateway)
+                const resRiesgo = await fetch('/api/clasificar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(datos.variables)
+                });
+                if (!resRiesgo.ok) throw new Error('Error al clasificar riesgo');
+                const resultado = await resRiesgo.json();
+
+                // 3. Mostrar resultado en el panel
+                mostrarResultado(comuna.nombre, datos.variables, resultado);
+
+            } catch (error) {
+                mostrarError(error.message);
+            }
+        }
+
+        // === Funciones de UI ===
+        function mostrarLoading() {
+            document.getElementById('placeholder').style.display = 'none';
+            document.getElementById('resultado').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+            document.getElementById('loading').style.display = 'block';
+        }
+
+        function mostrarResultado(nombreZona, variables, resultado) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('resultado').style.display = 'block';
+            document.getElementById('error').style.display = 'none';
+
+            document.getElementById('zona-nombre').textContent = nombreZona;
+
+            const nivel = resultado.nivel_riesgo;
+            document.getElementById('riesgo-container').innerHTML = `
+                <div class="riesgo-badge riesgo-${nivel}">${nivel}</div>
+                <div class="puntaje">Puntaje: ${resultado.puntaje} / ${resultado.puntaje_maximo}</div>
+            `;
+
+            document.getElementById('variables').innerHTML = `
+                <div class="variable-row"><span>Temperatura</span><span>${variables.temperatura} °C</span></div>
+                <div class="variable-row"><span>Humedad</span><span>${variables.humedad} %</span></div>
+                <div class="variable-row"><span>Viento</span><span>${variables.viento} km/h</span></div>
+                <div class="variable-row"><span>Vegetación</span><span>${variables.vegetacion}</span></div>
+                <div class="variable-row"><span>Incendios históricos</span><span>${variables.incendios_historicos}</span></div>
+            `;
+        }
+
+        function mostrarError(mensaje) {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('resultado').style.display = 'none';
+            document.getElementById('placeholder').style.display = 'none';
+            const errorDiv = document.getElementById('error');
+            errorDiv.style.display = 'block';
+            errorDiv.textContent = ` Error: ${mensaje}`;
+        }
+    </script>
+</body>
+</html>
