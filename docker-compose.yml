@@ -1,4 +1,4 @@
-version: "3.9"
+
 
 services:
   gateway:
@@ -10,8 +10,7 @@ services:
       - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
     depends_on:
       - frontend
-      - data-service
-      - risk-service
+      - api-service
 
   frontend:
     build: ./frontend
@@ -19,14 +18,52 @@ services:
     expose:
       - "80"
 
+  api-service:
+    build: ./api-service
+    container_name: sirif-api-service
+    expose:
+      - "8000"
+    environment:
+      DATABASE_URL: postgresql://sirif:sirif2026@db:5432/sirif
+      DATA_SERVICE_URL: http://data-service:8000
+      RISK_SERVICE_URL: http://risk-service:8001
+    depends_on:
+      - db
+      - data-service
+      - risk-service
+
   data-service:
     build: ./data-service
     container_name: sirif-data-service
-    ports:
-      - "9000:8000"
+    expose:
+      - "8000"
 
   risk-service:
     build: ./risk-service
     container_name: sirif-risk-service
-    ports:
-      - "9001:8001"
+    expose:
+      - "8001"
+      
+  monitoring-service:
+    build: ./monitoring-service
+    container_name: sirif-monitoring-service
+    depends_on:
+      - api-service
+    environment:
+      API_SERVICE_URL: http://api-service:8000
+
+  db:
+    image: postgres:16-alpine
+    container_name: sirif-db
+    environment:
+      POSTGRES_USER: sirif
+      POSTGRES_PASSWORD: sirif2026
+      POSTGRES_DB: sirif
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+      - db_data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+
+volumes:
+  db_data:
