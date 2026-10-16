@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-
+from prometheus_fastapi_instrumentator import Instrumentator
 app = FastAPI(title="Risk Service - SIRIF")
 
 class VariablesZona(BaseModel):
@@ -59,3 +59,4 @@ def clasificar_riesgo(variables: VariablesZona):
             "incendios_historicos": variables.incendios_historicos
         }
     }
+Instrumentator().instrument(app).expose(app)

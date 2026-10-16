@@ -1,5 +1,3 @@
-
-
 services:
   gateway:
     image: nginx:alpine
@@ -8,6 +6,7 @@ services:
       - "9080:80"
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./gateway/.htpasswd:/etc/nginx/.htpasswd:ro
     depends_on:
       - frontend
       - api-service
@@ -20,37 +19,93 @@ services:
 
   api-service:
     build: ./api-service
-    container_name: sirif-api-service
     expose:
       - "8000"
     environment:
       DATABASE_URL: postgresql://sirif:sirif2026@db:5432/sirif
       DATA_SERVICE_URL: http://data-service:8000
       RISK_SERVICE_URL: http://risk-service:8001
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: sirif
+      RABBITMQ_PASS: sirif2026
     depends_on:
       - db
-      - data-service
-      - risk-service
+      - rabbitmq
+    deploy:
+      replicas: 2
+      resources:
+        limits:
+          cpus: '0.50'
+          memory: 256M
+      restart_policy:
+        condition: on-failure
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   data-service:
     build: ./data-service
     container_name: sirif-data-service
     expose:
       - "8000"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
 
   risk-service:
     build: ./risk-service
     container_name: sirif-risk-service
     expose:
       - "8001"
-      
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8001/')"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 20s
+
   monitoring-service:
     build: ./monitoring-service
     container_name: sirif-monitoring-service
-    depends_on:
-      - api-service
     environment:
-      API_SERVICE_URL: http://api-service:8000
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: sirif
+      RABBITMQ_PASS: sirif2026
+      INTERVALO: "30"
+    depends_on:
+      - rabbitmq
+
+  notification-service:
+    build: ./notification-service
+    container_name: sirif-notification-service
+    environment:
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_USER: sirif
+      RABBITMQ_PASS: sirif2026
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: sirif-rabbitmq
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    environment:
+      RABBITMQ_DEFAULT_USER: sirif
+      RABBITMQ_DEFAULT_PASS: sirif2026
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   db:
     image: postgres:16-alpine
@@ -65,5 +120,50 @@ services:
     expose:
       - "5432"
 
+  # ===== Stack de monitoreo =====
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: sirif-prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: sirif-grafana
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+    depends_on:
+      - prometheus
+    restart: unless-stopped
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: sirif-cadvisor
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+      - /dev/disk/:/dev/disk:ro
+    privileged: true
+    restart: unless-stopped
+
+  node-exporter:
+    image: prom/node-exporter:latest
+    container_name: sirif-node-exporter
+    ports:
+      - "9100:9100"
+    restart: unless-stopped
+
 volumes:
   db_data:
+  grafana_data:
