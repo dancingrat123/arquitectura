@@ -32,10 +32,16 @@ riesgo_por_distrito = {}
 
 for f in data['features']:
     nombre = get_nombre_comuna(f['properties'])
+    tipo = f['properties'].get('TIPO_DISTR', '')
+    densidad = f['properties'].get('Densidad', 0)
+    
+    # 1. Filtrar por comuna de interés
     if nombre and normalizar(nombre) in comunas_interes:
-        filtrados.append(f)
-        codigo = str(f['properties'].get('CODIGO_C17') or f['properties'].get('COD_DISTRI'))
-        riesgo_por_distrito[codigo] = comunas_interes[normalizar(nombre)]
+        # 2. Filtrar solo zonas rurales o de muy baja densidad (ej: menos de 50 hab/km2)
+        if tipo == 'RURAL' or densidad < 50:
+            filtrados.append(f)
+            codigo = str(f['properties'].get('CODIGO_C17') or f['properties'].get('COD_DISTRI'))
+            riesgo_por_distrito[codigo] = comunas_interes[normalizar(nombre)]
 
 data['features'] = filtrados
 
