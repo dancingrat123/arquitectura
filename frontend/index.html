@@ -34,15 +34,8 @@
         .zona-nivel.BAJO { background: #16a34a; }
         .zona-nivel.MEDIO { background: #ea580c; }
         .zona-nivel.ALTO { background: #dc2626; }
-        .fuente-tag {
-            font-size: 0.7rem; color: #94a3b8; margin-top: 3px;
-        }
-        .placeholder {
-            text-align: center; color: #64748b; padding: 40px 20px; font-size: 0.9rem;
-        }
-        .loading {
-            text-align: center; padding: 30px; color: #38bdf8;
-        }
+        .fuente-tag { font-size: 0.7rem; color: #94a3b8; margin-top: 3px; }
+        .loading { text-align: center; padding: 30px; color: #38bdf8; }
         .spinner {
             border: 3px solid #334155; border-top: 3px solid #38bdf8;
             border-radius: 50%; width: 30px; height: 30px; margin: 0 auto 15px;
@@ -50,19 +43,50 @@
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .error { background: #7f1d1d; padding: 15px; border-radius: 8px; font-size: 0.85rem; }
-        .legend {
-            display: flex; gap: 15px; margin-top: 10px; font-size: 0.75rem;
-        }
+        .legend { display: flex; gap: 15px; margin-top: 10px; font-size: 0.75rem; }
         .legend-item { display: flex; align-items: center; gap: 5px; }
-        .legend-dot {
-            width: 12px; height: 12px; border-radius: 50%;
-        }
+        .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
         .legend-dot.ALTO { background: #dc2626; }
         .legend-dot.MEDIO { background: #ea580c; }
         .legend-dot.BAJO { background: #16a34a; }
+
+        /* Estilos del Login */
+        #login-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.95); display: flex; justify-content: center;
+            align-items: center; z-index: 9999;
+        }
+        #login-box {
+            background: #1e293b; padding: 40px; border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 400px;
+            border: 1px solid #334155;
+        }
+        #login-box h2 { color: #38bdf8; margin-bottom: 20px; text-align: center; }
+        #login-box input {
+            width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px;
+            border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 1rem;
+        }
+        #login-box button {
+            width: 100%; padding: 12px; background: #38bdf8; color: #0f172a;
+            border: none; border-radius: 6px; font-weight: bold; font-size: 1rem;
+            cursor: pointer; transition: background 0.2s;
+        }
+        #login-box button:hover { background: #0ea5e9; }
+        #login-error { color: #ef4444; font-size: 0.85rem; margin-top: 10px; text-align: center; display: none; }
     </style>
 </head>
 <body>
+    <!-- Overlay de Login -->
+    <div id="login-overlay">
+        <div id="login-box">
+            <h2>Iniciar Sesión - SIRIF</h2>
+            <input type="text" id="username" placeholder="Usuario" value="admin">
+            <input type="password" id="password" placeholder="Contraseña" value="sirif2026">
+            <button onclick="login()">Ingresar</button>
+            <div id="login-error">Credenciales incorrectas o error de servidor</div>
+        </div>
+    </div>
+
     <div id="map"></div>
 
     <div id="panel">
@@ -70,14 +94,11 @@
         <p class="subtitle">Sistema Inteligente de Riesgo de Incendios Forestales</p>
 
         <div class="section-title">Riesgo por zona</div>
-
-        <div id="loading" class="loading">
+        <div id="loading" class="loading" style="display:none;">
             <div class="spinner"></div>
             Cargando zonas...
         </div>
-
         <div id="zonas-lista" style="display:none;"></div>
-
         <div id="error" class="error" style="display:none;"></div>
 
         <div class="section-title">Leyenda</div>
@@ -86,94 +107,121 @@
             <div class="legend-item"><div class="legend-dot MEDIO"></div>Medio</div>
             <div class="legend-item"><div class="legend-dot ALTO"></div>Alto</div>
         </div>
+        <div style="margin-top: 20px; text-align: center;">
+            <button onclick="logout()" style="background: #dc2626; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Cerrar Sesión</button>
+        </div>
     </div>
 
     <script src="leaflet.js"></script>
     <script>
-        // Configuracion del mapa
         const map = L.map('map').setView([-33.05, -71.5], 10);
-
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: 'OpenStreetMap',
-            maxZoom: 18
+            attribution: 'OpenStreetMap', maxZoom: 18
         }).addTo(map);
 
-        // Coordenadas de las comunas (para centrar desde el panel)
         const COORDENADAS = {
             "quilpue": { lat: -33.0486, lng: -71.4425 },
             "vina_del_mar": { lat: -33.0245, lng: -71.5518 },
             "valparaiso": { lat: -33.0472, lng: -71.6127 }
         };
 
-        // Colores segun nivel de riesgo
-        const COLORES = {
-            "ALTO": "#dc2626",
-            "MEDIO": "#ea580c",
-            "BAJO": "#16a34a"
-        };
+        const COLORES = { "ALTO": "#dc2626", "MEDIO": "#ea580c", "BAJO": "#16a34a" };
 
-        // Conversion de Web Mercator (EPSG:3857) a WGS84 (EPSG:4326)
-        function webMercatorToWGS84(x, y) {
-            const lng = (x / 20037508.34) * 180;
-            let lat = (y / 20037508.34) * 180;
-            lat = (180 / Math.PI) * (2 * Math.atan(Math.exp((lat * Math.PI) / 180)) - Math.PI / 2);
-            return [lng, lat];
-        }
-
-        function reproyectarCoords(coords) {
-            if (typeof coords[0] === 'number') {
-                return webMercatorToWGS84(coords[0], coords[1]);
-            }
-            return coords.map(reproyectarCoords);
-        }
-
-        function reproyectarGeoJSON(geojson) {
-            geojson.features.forEach(f => {
-                f.geometry.coordinates = reproyectarCoords(f.geometry.coordinates);
-            });
-            return geojson;
-        }
-
-        // Funcion principal: cargar el heatmap
-        async function cargarHeatmap() {
+        // === LOGIN Y TOKEN ===
+        async function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorDiv = document.getElementById('login-error');
+            
             try {
-                const res = await fetch('/api/riesgo/todas');
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                const formData = new URLSearchParams();
+                formData.append('username', username);
+                formData.append('password', password);
+
+                const res = await fetch('/token', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                if (!res.ok) throw new Error('Credenciales incorrectas');
+
                 const data = await res.json();
+                localStorage.setItem('sirif_token', data.access_token);
+                
+                // Ocultar login y cargar datos
+                document.getElementById('login-overlay').style.display = 'none';
+                cargarHeatmap();
+
+            } catch (error) {
+                errorDiv.style.display = 'block';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('sirif_token');
+            location.reload();
+        }
+
+        // Helper para peticiones autenticadas
+        async function fetchConToken(url) {
+            const token = localStorage.getItem('sirif_token');
+            if (!token) throw new Error("No hay sesión iniciada");
+
+            const res = await fetch(url, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+
+            if (res.status === 401) {
+                logout();
+                throw new Error("Sesión expirada");
+            }
+            return res;
+        }
+
+        // === CARGA DE DATOS ===
+        async function cargarHeatmap() {
+            document.getElementById('loading').style.display = 'block';
+            try {
+                const res = await fetchConToken('/api/riesgo/todas');
+                const data = await res.json();
+                
+                // VALIDACIÓN DE DATOS OBSOLETOS
+                if (data.zonas && data.zonas.length > 0) {
+                    const fechaString = data.zonas[0].fecha_evaluacion;
+                    const fechaEvaluacion = new Date(fechaString);
+                    const ahora = new Date();
+                    const diferenciaHoras = (ahora - fechaEvaluacion) / (1000 * 60 * 60);
+
+                    if (diferenciaHoras > 1) { // Si tiene más de 1 hora
+                        const errorDiv = document.getElementById('error');
+                        errorDiv.style.display = 'block';
+                        errorDiv.textContent = `Advertencia: Los datos tienen ${diferenciaHoras.toFixed(1)} horas de antigüedad. El servicio de IA podría estar desconectado.`;
+                    }
+                }
 
                 mostrarZonas(data.zonas);
                 dibujarHeatmap();
             } catch (error) {
-                console.error('Error:', error);
                 mostrarError(error.message);
             }
-        }
+        }   
+        
 
-        // Dibujar distritos con riesgo desde el backend
         async function dibujarHeatmap() {
-            // 1. Cargar geometrias (solo poligonos)
-            const geoRes = await fetch('/data/distritos_filtrados.geojson');
+            const geoRes = await fetch('/data/distritos_filtrados.geojson'); 
             const geojson = await geoRes.json();
-            reproyectarGeoJSON(geojson);
 
-            // 2. Cargar riesgo por distrito desde Data Service (simulado)
-            const apiRes = await fetch('/api/datos/distritos');
+            const apiRes = await fetchConToken('/api/datos/distritos'); 
             const apiData = await apiRes.json();
             const riesgoPorCodigo = (apiData && apiData.distritos) ? apiData.distritos : {};
 
-            console.log('Distritos con riesgo:', Object.keys(riesgoPorCodigo).length);
-
-            // 3. Dibujar
             L.geoJSON(geojson, {
                 style: feature => {
                     const codigo = String(feature.properties.CODIGO_C17 || feature.properties.COD_DISTRI || '');
                     const nivel = riesgoPorCodigo[codigo] || 'BAJO';
                     return {
                         fillColor: COLORES[nivel] || '#888888',
-                        weight: 1,
-                        opacity: 1,
-                        color: '#ffffff',
-                        fillOpacity: 0.4
+                        weight: 1, opacity: 1, color: '#ffffff', fillOpacity: 0.6
                     };
                 },
                 onEachFeature: (feature, layer) => {
@@ -192,7 +240,6 @@
             }).addTo(map);
         }
 
-        // Mostrar la lista de zonas en el panel
         function mostrarZonas(zonas) {
             document.getElementById('loading').style.display = 'none';
             const lista = document.getElementById('zonas-lista');
@@ -212,7 +259,6 @@
             `).join('');
         }
 
-        // Centrar el mapa en una zona al hacer clic en la lista
         function centrarZona(zonaId) {
             const coords = COORDENADAS[zonaId];
             if (coords) {
@@ -232,7 +278,14 @@
             errorDiv.textContent = `Error: ${mensaje}`;
         }
 
-        window.addEventListener('load', cargarHeatmap);
+        // === INICIO ===
+        window.addEventListener('load', () => {
+            const token = localStorage.getItem('sirif_token');
+            if (token) {
+                document.getElementById('login-overlay').style.display = 'none';
+                cargarHeatmap();
+            }
+        });
     </script>
 </body>
 </html>

@@ -1,6 +1,9 @@
-fastapi==0.115.0
-uvicorn==0.32.0
-psycopg2-binary==2.9.9
-httpx==0.27.0
-pika==1.3.2
+fastapi
+uvicorn
+httpx
+pika
+psycopg2-binary
 prometheus-fastapi-instrumentator
+python-jose[cryptography]
+passlib
+python-multipart

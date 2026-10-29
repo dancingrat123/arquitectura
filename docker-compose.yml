@@ -4,30 +4,40 @@ services:
     container_name: sirif-gateway
     ports:
       - "9080:80"
+      - "9443:443"
     volumes:
       - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./gateway/.htpasswd:/etc/nginx/.htpasswd:ro
+      - ./gateway/nginx.crt:/etc/nginx/nginx.crt:ro
+      - ./gateway/nginx.key:/etc/nginx/nginx.key:ro
     depends_on:
       - frontend
       - api-service
+    restart: always
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://localhost/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
 
   frontend:
     build: ./frontend
     container_name: sirif-frontend
     expose:
       - "80"
+    restart: always
 
   api-service:
     build: ./api-service
     expose:
       - "8000"
     environment:
-      DATABASE_URL: postgresql://sirif:sirif2026@db:5432/sirif
+      DATABASE_URL: ${DATABASE_URL}
       DATA_SERVICE_URL: http://data-service:8000
       RISK_SERVICE_URL: http://risk-service:8001
       RABBITMQ_HOST: rabbitmq
-      RABBITMQ_USER: sirif
-      RABBITMQ_PASS: sirif2026
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
+      JWT_SECRET: ${JWT_SECRET}
     depends_on:
       - db
       - rabbitmq
@@ -57,6 +67,7 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
+    restart: always
 
   risk-service:
     build: ./risk-service
@@ -69,28 +80,31 @@ services:
       timeout: 5s
       retries: 3
       start_period: 20s
+    restart: always
 
   monitoring-service:
     build: ./monitoring-service
     container_name: sirif-monitoring-service
     environment:
       RABBITMQ_HOST: rabbitmq
-      RABBITMQ_USER: sirif
-      RABBITMQ_PASS: sirif2026
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
       INTERVALO: "30"
     depends_on:
       - rabbitmq
+    restart: always
 
   notification-service:
     build: ./notification-service
     container_name: sirif-notification-service
     environment:
       RABBITMQ_HOST: rabbitmq
-      RABBITMQ_USER: sirif
-      RABBITMQ_PASS: sirif2026
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASS: ${RABBITMQ_PASS}
     depends_on:
       rabbitmq:
         condition: service_healthy
+    restart: always
 
   rabbitmq:
     image: rabbitmq:3-management-alpine
@@ -99,8 +113,9 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: sirif
-      RABBITMQ_DEFAULT_PASS: sirif2026
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
+    restart: always
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
@@ -111,14 +126,15 @@ services:
     image: postgres:16-alpine
     container_name: sirif-db
     environment:
-      POSTGRES_USER: sirif
-      POSTGRES_PASSWORD: sirif2026
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: sirif
     volumes:
       - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
       - db_data:/var/lib/postgresql/data
     expose:
       - "5432"
+    restart: always
 
   # ===== Stack de monitoreo =====
   prometheus:
@@ -136,7 +152,7 @@ services:
     ports:
       - "3000:3000"
     environment:
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
     volumes:
       - grafana_data:/var/lib/grafana
     depends_on:

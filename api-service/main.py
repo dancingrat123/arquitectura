@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends, HTTPException
 from datetime import datetime
 import psycopg2
 import httpx
@@ -8,6 +8,14 @@ import os
 import threading
 import time
 from prometheus_fastapi_instrumentator import Instrumentator
+from fastapi import Depends
+from fastapi.security import OAuth2PasswordRequestForm
+from auth import (
+    verify_password, FAKE_USERS_DB, create_access_token, 
+    get_current_user, ACCESS_TOKEN_EXPIRE_MINUTES
+)
+from datetime import timedelta
+
 app = FastAPI(title="API Service - SIRIF")
 
 DATABASE_URL = os.getenv("DATABASE_URL")
@@ -133,7 +141,23 @@ def startup_event():
 def health():
     return {"status": "ok", "servicio": "api-service"}
 
-@app.get("/api/riesgo/todas")
+@app.post("/token")
+async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends()):
+    user = FAKE_USERS_DB.get(form_data.username)
+    if not user or not verify_password(form_data.password, user["hashed_password"]):
+        raise HTTPException(
+            status_code=401,
+            detail="Usuario o contraseña incorrectos",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    
+    access_token_expires = timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    access_token = create_access_token(
+        data={"sub": user["username"]}, expires_delta=access_token_expires
+    )
+    return {"access_token": access_token, "token_type": "bearer"}
+
+@app.get("/api/riesgo/todas", dependencies=[Depends(get_current_user)])
 def obtener_todas_las_zonas():
     """Devuelve el riesgo de todas las zonas (último resultado por zona)"""
     conn = get_db()
@@ -166,7 +190,7 @@ def obtener_todas_las_zonas():
         ]
     }
     
-@app.get("/api/riesgo/{zona}")
+@app.get("/api/riesgo/{zona}", dependencies=[Depends(get_current_user)])
 def consultar_riesgo(zona: str):
     # 1. Buscar en caché
     conn = get_db()
