@@ -148,7 +148,6 @@
                 const data = await res.json();
                 localStorage.setItem('sirif_token', data.access_token);
                 
-                // Ocultar login y cargar datos
                 document.getElementById('login-overlay').style.display = 'none';
                 cargarHeatmap();
 
@@ -162,7 +161,6 @@
             location.reload();
         }
 
-        // Helper para peticiones autenticadas
         async function fetchConToken(url) {
             const token = localStorage.getItem('sirif_token');
             if (!token) throw new Error("No hay sesión iniciada");
@@ -178,6 +176,28 @@
             return res;
         }
 
+        // === CONVERSIÓN DE COORDENADAS ===
+        function webMercatorToWGS84(x, y) {
+            const lng = (x / 20037508.34) * 180;
+            let lat = (y / 20037508.34) * 180;
+            lat = (180 / Math.PI) * (2 * Math.atan(Math.exp((lat * Math.PI) / 180)) - Math.PI / 2);
+            return [lng, lat];
+        }
+
+        function reproyectarCoords(coords) {
+            if (typeof coords[0] === 'number') {
+                return webMercatorToWGS84(coords[0], coords[1]);
+            }
+            return coords.map(reproyectarCoords);
+        }
+
+        function reproyectarGeoJSON(geojson) {
+            geojson.features.forEach(f => {
+                f.geometry.coordinates = reproyectarCoords(f.geometry.coordinates);
+            });
+            return geojson;
+        }
+
         // === CARGA DE DATOS ===
         async function cargarHeatmap() {
             document.getElementById('loading').style.display = 'block';
@@ -185,14 +205,13 @@
                 const res = await fetchConToken('/api/riesgo/todas');
                 const data = await res.json();
                 
-                // VALIDACIÓN DE DATOS OBSOLETOS
                 if (data.zonas && data.zonas.length > 0) {
                     const fechaString = data.zonas[0].fecha_evaluacion;
                     const fechaEvaluacion = new Date(fechaString);
                     const ahora = new Date();
                     const diferenciaHoras = (ahora - fechaEvaluacion) / (1000 * 60 * 60);
 
-                    if (diferenciaHoras > 1) { // Si tiene más de 1 hora
+                    if (diferenciaHoras > 1) {
                         const errorDiv = document.getElementById('error');
                         errorDiv.style.display = 'block';
                         errorDiv.textContent = `Advertencia: Los datos tienen ${diferenciaHoras.toFixed(1)} horas de antigüedad. El servicio de IA podría estar desconectado.`;
@@ -206,10 +225,12 @@
             }
         }   
         
-
         async function dibujarHeatmap() {
             const geoRes = await fetch('/data/distritos_filtrados.geojson'); 
             const geojson = await geoRes.json();
+            
+            // LLAMADA A LA REPROYECCIÓN
+            reproyectarGeoJSON(geojson); 
 
             const apiRes = await fetchConToken('/api/datos/distritos'); 
             const apiData = await apiRes.json();
@@ -278,7 +299,6 @@
             errorDiv.textContent = `Error: ${mensaje}`;
         }
 
-        // === INICIO ===
         window.addEventListener('load', () => {
             const token = localStorage.getItem('sirif_token');
             if (token) {

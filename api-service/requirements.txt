@@ -7,3 +7,4 @@ prometheus-fastapi-instrumentator
 python-jose[cryptography]
 passlib
 python-multipart
+pytest
