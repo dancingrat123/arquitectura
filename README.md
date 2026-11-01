@@ -178,6 +178,9 @@ arquitectura/
 - Datos de riesgo por distrito: simulados.
 - Arquitectura preparada para reemplazar las simulaciones por implementaciones reales sin rediseño.
 
+## Notas
+Ahora se usa jwt y https
+
 ## Declaración de uso de IA
 
 Se utilizaron herramientas de IA generativa para apoyo en redacción, revisión técnica y generación de diagramas. Todo el contenido fue revisado, validado y adaptado por el equipo. Las decisiones arquitectónicas y el análisis técnico son de autoría propia.
