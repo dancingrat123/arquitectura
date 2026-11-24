@@ -1,0 +1,9 @@
+# Datos crudos y generados (no versionar)
+extraido/
+*.rar
+*.shp
+*.shx
+*.dbf
+*.prj
+*.xlsx
+*.csv

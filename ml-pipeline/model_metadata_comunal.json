@@ -1,0 +1,232 @@
+{
+  "version_modelo": "rf-comunal-clima-v1",
+  "sha256_modelo": "aeabb16c450dbe191f7af97cce15ba5b21af99d7e505d8d0208866f113e3b254",
+  "fecha_entrenamiento": "2026-11-24T20:53:12.088843+00:00",
+  "commit": "d86eda4",
+  "dataset": "datos_externos\\conaf\\dataset_comunal_diario_valparaiso_2017_2025.csv",
+  "filas": 103428,
+  "comunas": [
+    "algarrobo",
+    "cabildo",
+    "calle larga",
+    "cartagena",
+    "casablanca",
+    "catemu",
+    "concon",
+    "el quisco",
+    "el tabo",
+    "hijuelas",
+    "la calera",
+    "la cruz",
+    "la ligua",
+    "limache",
+    "llaillay",
+    "los andes",
+    "nogales",
+    "olmue",
+    "panquehue",
+    "papudo",
+    "petorca",
+    "puchuncavi",
+    "putaendo",
+    "quillota",
+    "quilpue",
+    "quintero",
+    "rinconada",
+    "san antonio",
+    "san esteban",
+    "san felipe",
+    "santa maria",
+    "santo domingo",
+    "valparaiso",
+    "villa alemana",
+    "vina del mar",
+    "zapallar"
+  ],
+  "features": [
+    "TEMP_MED",
+    "TEMP_MAX",
+    "HUMEDAD_REL",
+    "VEL_VIENTO",
+    "PRECIPITACION",
+    "precip_7d",
+    "temp_media_7d",
+    "humedad_7d",
+    "precip_30d",
+    "mes",
+    "mes_sin",
+    "mes_cos",
+    "com_algarrobo",
+    "com_cabildo",
+    "com_calle larga",
+    "com_cartagena",
+    "com_casablanca",
+    "com_catemu",
+    "com_concon",
+    "com_el quisco",
+    "com_el tabo",
+    "com_hijuelas",
+    "com_la calera",
+    "com_la cruz",
+    "com_la ligua",
+    "com_limache",
+    "com_llaillay",
+    "com_los andes",
+    "com_nogales",
+    "com_olmue",
+    "com_panquehue",
+    "com_papudo",
+    "com_petorca",
+    "com_puchuncavi",
+    "com_putaendo",
+    "com_quillota",
+    "com_quilpue",
+    "com_quintero",
+    "com_rinconada",
+    "com_san antonio",
+    "com_san esteban",
+    "com_san felipe",
+    "com_santa maria",
+    "com_santo domingo",
+    "com_valparaiso",
+    "com_villa alemana",
+    "com_vina del mar",
+    "com_zapallar"
+  ],
+  "prevalencia": 0.030610666357272692,
+  "positivos": 3166,
+  "ventana": {
+    "inicio": "2017-07-19",
+    "fin": "2025-05-30",
+    "corte_temporal": "2024-01-01"
+  },
+  "fuentes": {
+    "incendios": "CONAF - SHP puntos georreferenciados (IDE Minagri)",
+    "clima": "Open-Meteo Archive models=era5"
+  },
+  "validacion_temporal": {
+    "auc": 0.7598857945382009,
+    "ap": 0.1244470240891871,
+    "brier": 0.03746872792984987,
+    "tabla_calibracion": [
+      {
+        "quintil": 0,
+        "p_media": 0.012962993955643421,
+        "tasa_real": 0.005920344456404736,
+        "n": 3716
+      },
+      {
+        "quintil": 1,
+        "p_media": 0.015202193485704712,
+        "tasa_real": 0.016689098250336473,
+        "n": 3715
+      },
+      {
+        "quintil": 2,
+        "p_media": 0.019264343168059462,
+        "tasa_real": 0.0234185733512786,
+        "n": 3715
+      },
+      {
+        "quintil": 3,
+        "p_media": 0.025991578944550085,
+        "tasa_real": 0.04360699865410498,
+        "n": 3715
+      },
+      {
+        "quintil": 4,
+        "p_media": 0.09314530270120806,
+        "tasa_real": 0.10578734858681023,
+        "n": 3715
+      }
+    ],
+    "n_train": 84852,
+    "n_test": 18576,
+    "positivos_test": 726
+  },
+  "validacion_espacial": {
+    "auc": 0.7293190120469336,
+    "ap": 0.06886846680467769,
+    "brier": 0.029105951201450382
+  },
+  "umbrales": {
+    "alto": 0.07,
+    "medio": 0.031
+  },
+  "limitaciones": [
+    "Modelo comunal diario; no es inferencia distrital.",
+    "Estima ocurrencia de al menos un incendio en la comuna, no el número ni la superficie.",
+    "No es un pronóstico operacional de incendios.",
+    "Cobertura 2017-2025; no extrapola a regímenes climáticos no observados.",
+    "Clima histórico ERA5; la ingesta operacional usa ecmwf_ifs025."
+  ],
+  "umbrales_criterio": "Cuantiles OOF: ALTO top 5%, MEDIO top 20%",
+  "metricas_umbral_temporal": {
+    "alto": {
+      "umbral": 0.07,
+      "precision": 0.155,
+      "recall": 0.262,
+      "predichos": 1229,
+      "positivos": 726
+    },
+    "medio": {
+      "umbral": 0.031,
+      "precision": 0.105,
+      "recall": 0.545,
+      "predichos": 3774,
+      "positivos": 726
+    }
+  },
+  "meses_entrenamiento": [
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8,
+    9,
+    10,
+    11,
+    12
+  ],
+  "rango_features": {
+    "TEMP_MED": [
+      -7.9,
+      29.1
+    ],
+    "TEMP_MAX": [
+      -2.5,
+      38.7
+    ],
+    "HUMEDAD_REL": [
+      14.0,
+      100.0
+    ],
+    "VEL_VIENTO": [
+      2.9,
+      50.6
+    ],
+    "PRECIPITACION": [
+      0.0,
+      79.1
+    ],
+    "precip_7d": [
+      0.0,
+      167.50000000000003
+    ],
+    "temp_media_7d": [
+      -2.4142857142857146,
+      26.97142857142857
+    ],
+    "humedad_7d": [
+      28.0,
+      95.85714285714286
+    ],
+    "precip_30d": [
+      0.0,
+      301.2
+    ]
+  }
+}

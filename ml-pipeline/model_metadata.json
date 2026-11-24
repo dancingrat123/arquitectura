@@ -1,0 +1,240 @@
+{
+  "version_modelo": "rf-clima-region-v2",
+  "sha256_modelo": "d7e6466fc35b1a794e7cf4a859722c99e9de17823771aef976771186fe92ea4f",
+  "fecha_entrenamiento": "2026-11-18T02:24:17.115205+00:00",
+  "commit": "f695508",
+  "objetivo": "y = (nro_inc_act > 5) | (sup_afec_act > 100)",
+  "prevalencia": 0.088,
+  "ventana": {
+    "inicio": "2026-07-01",
+    "fin": "2026-09-28"
+  },
+  "fuentes": {
+    "objetivo": "ml-pipeline/conaf.csv (CONAF)",
+    "clima": "ml-pipeline/openmeteo_entrenamiento.csv (Open-Meteo ecmwf_ifs025)",
+    "coordenadas": "ml-pipeline/emas.csv (EMAS, promedio regional)"
+  },
+  "modelo": {
+    "algoritmo": "RandomForestClassifier + CalibratedClassifierCV(sigmoid)",
+    "n_estimators": 500,
+    "min_samples_leaf": 5,
+    "class_weight": null,
+    "monotonic_cst": {
+      "TEMP_MED": 1,
+      "TEMP_MAX": 1,
+      "HUMEDAD_REL": -1,
+      "VEL_VIENTO": 0,
+      "PRECIPITACION": -1,
+      "precip_7d": -1,
+      "temp_media_7d": 1,
+      "humedad_7d": -1,
+      "precip_30d": -1,
+      "reg_antofagasta": 0,
+      "reg_araucania": 0,
+      "reg_arica y parinacota": 0,
+      "reg_atacama": 0,
+      "reg_aysen": 0,
+      "reg_biobio": 0,
+      "reg_coquimbo": 0,
+      "reg_los lagos": 0,
+      "reg_los rios": 0,
+      "reg_magallanes": 0,
+      "reg_maule": 0,
+      "reg_metropolitana": 0,
+      "reg_nuble": 0,
+      "reg_o'higgins": 0,
+      "reg_tarapaca": 0,
+      "reg_valparaiso": 0
+    }
+  },
+  "features": [
+    "TEMP_MED",
+    "TEMP_MAX",
+    "HUMEDAD_REL",
+    "VEL_VIENTO",
+    "PRECIPITACION",
+    "precip_7d",
+    "temp_media_7d",
+    "humedad_7d",
+    "precip_30d"
+  ],
+  "regiones": [
+    "antofagasta",
+    "araucania",
+    "arica y parinacota",
+    "atacama",
+    "aysen",
+    "biobio",
+    "coquimbo",
+    "los lagos",
+    "los rios",
+    "magallanes",
+    "maule",
+    "metropolitana",
+    "nuble",
+    "o'higgins",
+    "tarapaca",
+    "valparaiso"
+  ],
+  "umbrales": {
+    "alto": 0.2,
+    "medio": 0.08
+  },
+  "meses_entrenamiento": [
+    7,
+    8,
+    9
+  ],
+  "rango_features": {
+    "TEMP_MED": [
+      -13.8,
+      26.1
+    ],
+    "TEMP_MAX": [
+      -7.0,
+      32.1
+    ],
+    "HUMEDAD_REL": [
+      5.0,
+      99.0
+    ],
+    "VEL_VIENTO": [
+      1.5,
+      45.7
+    ],
+    "PRECIPITACION": [
+      0.0,
+      117.6
+    ],
+    "precip_7d": [
+      0.0,
+      344.6
+    ],
+    "temp_media_7d": [
+      -10.21,
+      24.39
+    ],
+    "humedad_7d": [
+      9.0,
+      97.0
+    ],
+    "precip_30d": [
+      0.0,
+      643.2
+    ]
+  },
+  "validacion": {
+    "temporal": {
+      "metodo": "entrena 2026-07-01..2026-08-31, prueba 2026-09-01..2026-09-28",
+      "n_entrenamiento": 992,
+      "n_prueba": 448,
+      "positivos_prueba": 106,
+      "prevalencia_prueba": 0.237,
+      "auc": 0.662,
+      "ap": 0.523,
+      "brier": 0.191,
+      "calibracion": [
+        {
+          "quintil": 1,
+          "n": 90,
+          "p_media": 0.006,
+          "tasa_real": 0.189
+        },
+        {
+          "quintil": 2,
+          "n": 89,
+          "p_media": 0.007,
+          "tasa_real": 0.112
+        },
+        {
+          "quintil": 3,
+          "n": 90,
+          "p_media": 0.007,
+          "tasa_real": 0.2
+        },
+        {
+          "quintil": 4,
+          "n": 89,
+          "p_media": 0.008,
+          "tasa_real": 0.213
+        },
+        {
+          "quintil": 5,
+          "n": 90,
+          "p_media": 0.152,
+          "tasa_real": 0.467
+        }
+      ]
+    },
+    "out_of_fold": {
+      "auc": 0.904,
+      "ap": 0.57,
+      "brier": 0.055,
+      "calibracion": [
+        {
+          "quintil": 1,
+          "n": 288,
+          "p_media": 0.024,
+          "tasa_real": 0.0
+        },
+        {
+          "quintil": 2,
+          "n": 288,
+          "p_media": 0.028,
+          "tasa_real": 0.0
+        },
+        {
+          "quintil": 3,
+          "n": 288,
+          "p_media": 0.035,
+          "tasa_real": 0.031
+        },
+        {
+          "quintil": 4,
+          "n": 288,
+          "p_media": 0.056,
+          "tasa_real": 0.08
+        },
+        {
+          "quintil": 5,
+          "n": 288,
+          "p_media": 0.305,
+          "tasa_real": 0.33
+        }
+      ],
+      "umbrales": {
+        "alto": {
+          "umbral": 0.2,
+          "precision": 0.59,
+          "recall": 0.567,
+          "dias_alerta": 122,
+          "fraccion_dias": 0.085
+        },
+        "medio": {
+          "umbral": 0.08,
+          "precision": 0.337,
+          "recall": 0.74,
+          "dias_alerta": 279,
+          "fraccion_dias": 0.194
+        }
+      }
+    },
+    "leave_one_region_out": {
+      "por_region": 0.734,
+      "pooled": 0.615
+    },
+    "sensibilidad": {
+      "frio_humedo": 0.024,
+      "templado": 0.198,
+      "calor_seco": 0.571,
+      "extremo": 0.563
+    }
+  },
+  "limitaciones": [
+    "Modelo regional: las comunas heredan la tasa base de su región.",
+    "No modela estacionalidad: ventana jul-sep 2026; fuera de ella la salida es extrapolación.",
+    "No generaliza a regiones no vistas: sin identidad de región el AUC pooled es 0.615 (la discriminación dentro de una región retenida es 0.734). Una región nueva exige reentrenar.",
+    "No predice número de incendios ni ocurrencia de un incendio concreto.",
+    "Calibración validada solo en la ventana de entrenamiento."
+  ]
+}

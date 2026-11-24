@@ -20,6 +20,9 @@ Thumbs.db
 
 #datasets
 *.csv
+!ml-pipeline/openmeteo_entrenamiento.csv
 
 # Entorno
 .env
+# Modelo grande (296MB): se genera con ml-pipeline/train_comunal.py
+risk-service/modelo_riesgo_comunal.pkl

@@ -3,309 +3,517 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>SIRIF - Riesgo de Incendios Forestales</title>
+    <meta name="color-scheme" content="dark">
+    <title>SIRIF · Sala de control · Valparaíso</title>
     <link rel="icon" href="data:,">
-    <link rel="stylesheet" href="leaflet.css" />
-    <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Segoe UI', sans-serif; display: flex; height: 100vh; overflow: hidden; }
-        #map { flex: 1; height: 100vh; }
-        #panel {
-            width: 380px; padding: 25px; background: #1e293b; color: #fff;
-            overflow-y: auto; box-shadow: -4px 0 10px rgba(0,0,0,0.3);
-        }
-        #panel h1 { font-size: 1.4rem; margin-bottom: 5px; color: #38bdf8; }
-        #panel .subtitle { font-size: 0.85rem; color: #94a3b8; margin-bottom: 25px; }
-        .section-title {
-            font-size: 0.75rem; text-transform: uppercase; color: #94a3b8;
-            margin: 20px 0 10px 0; border-bottom: 1px solid #334155; padding-bottom: 5px;
-        }
-        .zona-item {
-            padding: 10px 12px; margin-bottom: 8px; border-radius: 6px;
-            display: flex; justify-content: space-between; align-items: center;
-            font-size: 0.9rem; cursor: pointer; transition: transform 0.2s;
-        }
-        .zona-item:hover { transform: translateX(3px); }
-        .zona-item.BAJO { background: #14532d; border-left: 4px solid #16a34a; }
-        .zona-item.MEDIO { background: #7c2d12; border-left: 4px solid #ea580c; }
-        .zona-item.ALTO { background: #7f1d1d; border-left: 4px solid #dc2626; }
-        .zona-nombre { font-weight: 600; }
-        .zona-nivel { font-weight: bold; font-size: 0.8rem; padding: 3px 8px; border-radius: 4px; }
-        .zona-nivel.BAJO { background: #16a34a; }
-        .zona-nivel.MEDIO { background: #ea580c; }
-        .zona-nivel.ALTO { background: #dc2626; }
-        .fuente-tag { font-size: 0.7rem; color: #94a3b8; margin-top: 3px; }
-        .loading { text-align: center; padding: 30px; color: #38bdf8; }
-        .spinner {
-            border: 3px solid #334155; border-top: 3px solid #38bdf8;
-            border-radius: 50%; width: 30px; height: 30px; margin: 0 auto 15px;
-            animation: spin 1s linear infinite;
-        }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-        .error { background: #7f1d1d; padding: 15px; border-radius: 8px; font-size: 0.85rem; }
-        .legend { display: flex; gap: 15px; margin-top: 10px; font-size: 0.75rem; }
-        .legend-item { display: flex; align-items: center; gap: 5px; }
-        .legend-dot { width: 12px; height: 12px; border-radius: 50%; }
-        .legend-dot.ALTO { background: #dc2626; }
-        .legend-dot.MEDIO { background: #ea580c; }
-        .legend-dot.BAJO { background: #16a34a; }
-
-        /* Estilos del Login */
-        #login-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.95); display: flex; justify-content: center;
-            align-items: center; z-index: 9999;
-        }
-        #login-box {
-            background: #1e293b; padding: 40px; border-radius: 12px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5); width: 100%; max-width: 400px;
-            border: 1px solid #334155;
-        }
-        #login-box h2 { color: #38bdf8; margin-bottom: 20px; text-align: center; }
-        #login-box input {
-            width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 6px;
-            border: 1px solid #334155; background: #0f172a; color: #fff; font-size: 1rem;
-        }
-        #login-box button {
-            width: 100%; padding: 12px; background: #38bdf8; color: #0f172a;
-            border: none; border-radius: 6px; font-weight: bold; font-size: 1rem;
-            cursor: pointer; transition: background 0.2s;
-        }
-        #login-box button:hover { background: #0ea5e9; }
-        #login-error { color: #ef4444; font-size: 0.85rem; margin-top: 10px; text-align: center; display: none; }
-    </style>
+    <link rel="stylesheet" href="leaflet.css">
+    <link rel="stylesheet" href="styles.css">
 </head>
-<body>
-    <!-- Overlay de Login -->
-    <div id="login-overlay">
-        <div id="login-box">
-            <h2>Iniciar Sesión - SIRIF</h2>
-            <input type="text" id="username" placeholder="Usuario" value="admin">
-            <input type="password" id="password" placeholder="Contraseña" value="sirif2026">
-            <button onclick="login()">Ingresar</button>
-            <div id="login-error">Credenciales incorrectas o error de servidor</div>
-        </div>
+<body class="is-guest">
+<svg class="svg-sprite" aria-hidden="true" focusable="false">
+    <defs>
+        <symbol id="i-contour" viewBox="0 0 32 32">
+            <path d="M16 4c6.6 0 12 4.7 12 10.6 0 6.2-5.7 11.2-12.4 11.2-6.3 0-11.2-4.2-11.2-9.4C4.4 11.1 9.6 6.5 16 4Z" fill="none" stroke="currentColor" stroke-width="1.5"/>
+            <path d="M16 8.2c4.7 0 8.4 3.2 8.4 7.2 0 4.3-3.9 7.8-8.6 7.8-4.4 0-7.9-3-7.9-6.7 0-3.8 3.7-6.8 8.1-8.3Z" fill="none" stroke="currentColor" stroke-width="1.3" opacity=".72"/>
+            <path d="M16 12.4c2.8 0 5 1.8 5 4.1 0 2.4-2.3 4.4-5.1 4.4-2.5 0-4.5-1.6-4.5-3.7 0-2.1 2.1-3.8 4.6-4.8Z" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".5"/>
+            <circle cx="16" cy="16.7" r="1.5" fill="currentColor"/>
+        </symbol>
+        <symbol id="i-bell" viewBox="0 0 24 24">
+            <path d="M18 8a6 6 0 0 0-12 0c0 7-3 8-3 8h18s-3-1-3-8" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M13.7 21a2 2 0 0 1-3.4 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-download" viewBox="0 0 24 24">
+            <path d="M12 3v12m0 0 4-4m-4 4-4-4M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </symbol>
+        <symbol id="i-file" viewBox="0 0 24 24">
+            <path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8l-5-5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M14 3v5h5M9 13h6M9 17h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-table" viewBox="0 0 24 24">
+            <rect x="3" y="4" width="18" height="16" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M3 9h18M9 9v11M15 9v11" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-map" viewBox="0 0 24 24">
+            <path d="m9 4-6 3v13l6-3 6 3 6-3V4l-6 3-6-3Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M9 4v13M15 7v13" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        </symbol>
+        <symbol id="i-close" viewBox="0 0 24 24">
+            <path d="m6 6 12 12M18 6 6 18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-refresh" viewBox="0 0 24 24">
+            <path d="M20 11a8 8 0 0 0-14.8-4M4 5v6h6M4 13a8 8 0 0 0 14.8 4M20 19v-6h-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </symbol>
+        <symbol id="i-search" viewBox="0 0 24 24">
+            <circle cx="11" cy="11" r="7" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <path d="m16.5 16.5 4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-chevron" viewBox="0 0 24 24">
+            <path d="m7 10 5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </symbol>
+        <symbol id="i-alert" viewBox="0 0 24 24">
+            <path d="M10.3 4.7 2.6 18a2 2 0 0 0 1.7 3h15.4a2 2 0 0 0 1.7-3L13.7 4.7a2 2 0 0 0-3.4 0Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M12 9v4M12 17h.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-info" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M12 11v5M12 8h.01" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-layers" viewBox="0 0 24 24">
+            <path d="m12 3 9 5-9 5-9-5 9-5Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="m3 13 9 5 9-5M3 17l9 5 9-5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round" opacity=".6"/>
+        </symbol>
+        <symbol id="i-wind" viewBox="0 0 24 24">
+            <path d="M3 8h9a3 3 0 1 0-3-3M3 12h13a3 3 0 1 1-3 3M3 16h6a2.5 2.5 0 1 1-2.5 2.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-temp" viewBox="0 0 24 24">
+            <path d="M10 13.5V5a2 2 0 1 1 4 0v8.5a4 4 0 1 1-4 0Z" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M12 17.5v-6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-rain" viewBox="0 0 24 24">
+            <path d="M7 15a5 5 0 1 1 1.2-9.9A6 6 0 0 1 19 8a4 4 0 0 1-.5 7.9H7Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M8 18v2M12 18v3M16 18v2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-drop" viewBox="0 0 24 24">
+            <path d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        </symbol>
+        <symbol id="i-send" viewBox="0 0 24 24">
+            <path d="m4 4 17 8-17 8 3-8-3-8Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <path d="M7 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-plus" viewBox="0 0 24 24">
+            <path d="M12 5v14M5 12h14" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-user" viewBox="0 0 24 24">
+            <circle cx="12" cy="8" r="4" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M4 21a8 8 0 0 1 16 0" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-logout" viewBox="0 0 24 24">
+            <path d="M10 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h4M15 8l4 4-4 4M9 12h10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </symbol>
+        <symbol id="i-eye" viewBox="0 0 24 24">
+            <path d="M2 12s3.5-6 10-6 10 6 10 6-3.5 6-10 6S2 12 2 12Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+            <circle cx="12" cy="12" r="2.6" fill="none" stroke="currentColor" stroke-width="1.8"/>
+        </symbol>
+        <symbol id="i-check" viewBox="0 0 24 24">
+            <path d="m5 12.5 4.5 4.5L19 7" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </symbol>
+        <symbol id="i-lock" viewBox="0 0 24 24">
+            <rect x="4" y="10" width="16" height="11" rx="2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M8 10V7a4 4 0 0 1 8 0v3" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-activity" viewBox="0 0 24 24">
+            <path d="M3 12h4l2.5-6 4 12 2.5-6h5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </symbol>
+        <symbol id="i-arrow" viewBox="0 0 24 24">
+            <path d="M5 12h14m0 0-5-5m5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        </symbol>
+        <symbol id="i-clock" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+    </defs>
+</svg>
+
+<!-- ===================== LOGIN ===================== -->
+<div class="login-overlay" id="login" role="dialog" aria-modal="true" aria-labelledby="login-title">
+    <div class="login-contour" aria-hidden="true">
+        <svg viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice">
+            <g fill="none" stroke="currentColor" stroke-width="1">
+                <path d="M-60 720C180 640 210 500 420 520s280 130 520 60 310-190 560-120"/>
+                <path d="M-80 760C160 680 240 560 440 570s270 110 510 50 330-160 580-90"/>
+                <path d="M-40 690C200 610 220 460 430 480s300 150 540 80 330-220 560-150"/>
+                <path d="M-20 660C220 590 240 420 450 440s290 160 530 90 340-240 570-170"/>
+                <path d="M-100 810C140 740 230 610 440 620s280 90 520 30 330-140 580-60"/>
+                <path d="M760 300c110-70 220-40 290 20s170 90 300 30"/>
+                <path d="M800 260c100-60 200-30 270 20s160 70 280 20"/>
+                <path d="M180 300c120-80 250-70 330 0s190 90 300 40"/>
+                <path d="M220 250c110-60 220-50 300 0s180 80 280 30"/>
+            </g>
+        </svg>
     </div>
 
-    <div id="map"></div>
-
-    <div id="panel">
-        <h1>SIRIF</h1>
-        <p class="subtitle">Sistema Inteligente de Riesgo de Incendios Forestales</p>
-
-        <div class="section-title">Riesgo por zona</div>
-        <div id="loading" class="loading" style="display:none;">
-            <div class="spinner"></div>
-            Cargando zonas...
-        </div>
-        <div id="zonas-lista" style="display:none;"></div>
-        <div id="error" class="error" style="display:none;"></div>
-
-        <div class="section-title">Leyenda</div>
-        <div class="legend">
-            <div class="legend-item"><div class="legend-dot BAJO"></div>Bajo</div>
-            <div class="legend-item"><div class="legend-dot MEDIO"></div>Medio</div>
-            <div class="legend-item"><div class="legend-dot ALTO"></div>Alto</div>
-        </div>
-        <div style="margin-top: 20px; text-align: center;">
-            <button onclick="logout()" style="background: #dc2626; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">Cerrar Sesión</button>
-        </div>
-    </div>
-
-    <script src="leaflet.js"></script>
-    <script>
-        const map = L.map('map').setView([-33.05, -71.5], 10);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: 'OpenStreetMap', maxZoom: 18
-        }).addTo(map);
-
-        const COORDENADAS = {
-            "quilpue": { lat: -33.0486, lng: -71.4425 },
-            "vina_del_mar": { lat: -33.0245, lng: -71.5518 },
-            "valparaiso": { lat: -33.0472, lng: -71.6127 }
-        };
-
-        const COLORES = { "ALTO": "#dc2626", "MEDIO": "#ea580c", "BAJO": "#16a34a" };
-
-        // === LOGIN Y TOKEN ===
-        async function login() {
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorDiv = document.getElementById('login-error');
-            
-            try {
-                const formData = new URLSearchParams();
-                formData.append('username', username);
-                formData.append('password', password);
-
-                const res = await fetch('/token', {
-                    method: 'POST',
-                    body: formData
-                });
-
-                if (!res.ok) throw new Error('Credenciales incorrectas');
-
-                const data = await res.json();
-                localStorage.setItem('sirif_token', data.access_token);
-                
-                document.getElementById('login-overlay').style.display = 'none';
-                cargarHeatmap();
-
-            } catch (error) {
-                errorDiv.style.display = 'block';
-            }
-        }
-
-        function logout() {
-            localStorage.removeItem('sirif_token');
-            location.reload();
-        }
-
-        async function fetchConToken(url) {
-            const token = localStorage.getItem('sirif_token');
-            if (!token) throw new Error("No hay sesión iniciada");
-
-            const res = await fetch(url, {
-                headers: { 'Authorization': `Bearer ${token}` }
-            });
-
-            if (res.status === 401) {
-                logout();
-                throw new Error("Sesión expirada");
-            }
-            return res;
-        }
-
-        // === CONVERSIÓN DE COORDENADAS ===
-        function webMercatorToWGS84(x, y) {
-            const lng = (x / 20037508.34) * 180;
-            let lat = (y / 20037508.34) * 180;
-            lat = (180 / Math.PI) * (2 * Math.atan(Math.exp((lat * Math.PI) / 180)) - Math.PI / 2);
-            return [lng, lat];
-        }
-
-        function reproyectarCoords(coords) {
-            if (typeof coords[0] === 'number') {
-                return webMercatorToWGS84(coords[0], coords[1]);
-            }
-            return coords.map(reproyectarCoords);
-        }
-
-        function reproyectarGeoJSON(geojson) {
-            geojson.features.forEach(f => {
-                f.geometry.coordinates = reproyectarCoords(f.geometry.coordinates);
-            });
-            return geojson;
-        }
-
-        // === CARGA DE DATOS ===
-        async function cargarHeatmap() {
-            document.getElementById('loading').style.display = 'block';
-            try {
-                const res = await fetchConToken('/api/riesgo/todas');
-                const data = await res.json();
-                
-                if (data.zonas && data.zonas.length > 0) {
-                    const fechaString = data.zonas[0].fecha_evaluacion;
-                    const fechaEvaluacion = new Date(fechaString);
-                    const ahora = new Date();
-                    const diferenciaHoras = (ahora - fechaEvaluacion) / (1000 * 60 * 60);
-
-                    if (diferenciaHoras > 1) {
-                        const errorDiv = document.getElementById('error');
-                        errorDiv.style.display = 'block';
-                        errorDiv.textContent = `Advertencia: Los datos tienen ${diferenciaHoras.toFixed(1)} horas de antigüedad. El servicio de IA podría estar desconectado.`;
-                    }
-                }
-
-                mostrarZonas(data.zonas);
-                dibujarHeatmap();
-            } catch (error) {
-                mostrarError(error.message);
-            }
-        }   
-        
-        async function dibujarHeatmap() {
-            const geoRes = await fetch('/data/distritos_filtrados.geojson'); 
-            const geojson = await geoRes.json();
-            
-            // LLAMADA A LA REPROYECCIÓN
-            reproyectarGeoJSON(geojson); 
-
-            const apiRes = await fetchConToken('/api/datos/distritos'); 
-            const apiData = await apiRes.json();
-            const riesgoPorCodigo = (apiData && apiData.distritos) ? apiData.distritos : {};
-
-            L.geoJSON(geojson, {
-                style: feature => {
-                    const codigo = String(feature.properties.CODIGO_C17 || feature.properties.COD_DISTRI || '');
-                    const nivel = riesgoPorCodigo[codigo] || 'BAJO';
-                    return {
-                        fillColor: COLORES[nivel] || '#888888',
-                        weight: 1, opacity: 1, color: '#ffffff', fillOpacity: 0.6
-                    };
-                },
-                onEachFeature: (feature, layer) => {
-                    const props = feature.properties;
-                    const codigo = String(props.CODIGO_C17 || props.COD_DISTRI || '');
-                    const nivel = riesgoPorCodigo[codigo] || 'Sin datos';
-                    const comuna = props.NOM_COMUNA || 'Distrito';
-                    layer.bindPopup(`
-                        <div style="font-family: sans-serif; min-width: 180px;">
-                            <h3 style="margin: 0 0 8px 0;">${comuna}</h3>
-                            <p style="margin: 4px 0;"><b>Distrito:</b> ${codigo}</p>
-                            <p style="margin: 4px 0;"><b>Riesgo:</b> ${nivel}</p>
-                        </div>
-                    `);
-                }
-            }).addTo(map);
-        }
-
-        function mostrarZonas(zonas) {
-            document.getElementById('loading').style.display = 'none';
-            const lista = document.getElementById('zonas-lista');
-            lista.style.display = 'block';
-
-            const orden = { "ALTO": 0, "MEDIO": 1, "BAJO": 2 };
-            zonas.sort((a, b) => orden[a.nivel_riesgo] - orden[b.nivel_riesgo]);
-
-            lista.innerHTML = zonas.map(z => `
-                <div class="zona-item ${z.nivel_riesgo}" onclick="centrarZona('${z.zona}')">
-                    <div>
-                        <div class="zona-nombre">${z.zona.replace('_', ' ')}</div>
-                        <div class="fuente-tag">Puntaje: ${z.puntaje}/${z.puntaje_maximo}</div>
-                    </div>
-                    <div class="zona-nivel ${z.nivel_riesgo}">${z.nivel_riesgo}</div>
+    <div class="login-frame">
+        <section class="login-brand" aria-label="Presentación">
+            <p class="login-eyebrow">
+                <span class="signal-dot" aria-hidden="true"></span>
+                Sala de control geoespacial
+            </p>
+            <h1 class="login-wordmark" id="login-title">SIRIF<span class="login-place">Valparaíso</span></h1>
+            <p class="login-lede">Riesgo meteorológico operacional para Quilpué, Viña del Mar y Valparaíso.</p>
+            <dl class="login-facts">
+                <div>
+                    <dt>Modelo</dt>
+                    <dd>Random Forest calibrado</dd>
                 </div>
-            `).join('');
-        }
+                <div>
+                    <dt>Ventana</dt>
+                    <dd>2017–2025</dd>
+                </div>
+                <div>
+                    <dt>Lectura</dt>
+                    <dd>Comunal, no pronóstico</dd>
+                </div>
+            </dl>
+            <p class="login-coords">33°02′S · 71°37′W <span>Región de Valparaíso</span></p>
+        </section>
 
-        function centrarZona(zonaId) {
-            const coords = COORDENADAS[zonaId];
-            if (coords) {
-                map.setView([coords.lat, coords.lng], 12);
-                map.eachLayer(layer => {
-                    if (layer.getBounds && layer.getBounds().contains([coords.lat, coords.lng])) {
-                        layer.openPopup();
-                    }
-                });
-            }
-        }
+        <form class="login-card" id="login-form" novalidate>
+            <p class="login-kicker">Acceso operativo</p>
+            <h2>Entrar a la sala</h2>
+            <p class="login-hint">Usa la cuenta asignada por el administrador.</p>
 
-        function mostrarError(mensaje) {
-            document.getElementById('loading').style.display = 'none';
-            const errorDiv = document.getElementById('error');
-            errorDiv.style.display = 'block';
-            errorDiv.textContent = `Error: ${mensaje}`;
-        }
+            <label class="field" for="login-user">
+                <span>Usuario</span>
+                <input id="login-user" name="username" type="text" autocomplete="username" spellcheck="false" required>
+            </label>
 
-        window.addEventListener('load', () => {
-            const token = localStorage.getItem('sirif_token');
-            if (token) {
-                document.getElementById('login-overlay').style.display = 'none';
-                cargarHeatmap();
-            }
-        });
-    </script>
+            <label class="field" for="login-password">
+                <span>Contraseña</span>
+                <span class="field-inline">
+                    <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+                    <button type="button" class="reveal" id="toggle-password" aria-label="Mostrar contraseña" aria-pressed="false">
+                        <svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg>
+                    </button>
+                </span>
+            </label>
+
+            <p class="form-error" id="login-error" role="alert" hidden></p>
+
+            <button type="submit" class="btn btn-primary login-submit" id="login-submit">
+                <span class="btn-label">Entrar a la sala</span>
+                <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+            </button>
+
+            <p class="login-foot">
+                <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+                Sesión cifrada · expira en 60 minutos
+            </p>
+        </form>
+    </div>
+
+    <p class="login-legal">Estimación de riesgo meteorológico; no es pronóstico de ocurrencia.</p>
+</div>
+
+<!-- ===================== BARRA DE MANDO ===================== -->
+<header class="topbar" id="topbar">
+    <div class="brand" aria-label="SIRIF Valparaíso">
+        <span class="brand-mark" aria-hidden="true">
+            <svg viewBox="0 0 32 32"><use href="#i-contour"/></svg>
+        </span>
+        <span class="brand-word">SIRIF</span>
+        <span class="brand-divider" aria-hidden="true">·</span>
+        <span class="brand-place">Valparaíso</span>
+    </div>
+
+    <nav class="view-switch" aria-label="Vista principal">
+        <button type="button" class="view-btn is-active" data-view="mapa" aria-pressed="true" aria-label="Mapa operativo">
+            <svg class="icon" aria-hidden="true"><use href="#i-map"/></svg>
+            <span class="view-long">Mapa operativo</span>
+            <span class="view-short">Mapa</span>
+        </button>
+        <button type="button" class="view-btn" data-view="tabla" aria-pressed="false" aria-label="Tabla comparativa y ranking">
+            <svg class="icon" aria-hidden="true"><use href="#i-table"/></svg>
+            <span class="view-long">Tabla &amp; ranking</span>
+            <span class="view-short">Ranking</span>
+        </button>
+    </nav>
+
+    <div class="topbar-actions">
+        <div class="services-wrap">
+            <button type="button" class="services-pill" id="services-btn" aria-expanded="false" aria-haspopup="dialog" aria-label="Estado de servicios">
+                <span class="signal-dot" id="services-dot" aria-hidden="true"></span>
+                <span id="services-label">Servicios</span>
+                <svg class="icon icon-sm" aria-hidden="true"><use href="#i-chevron"/></svg>
+            </button>
+            <div class="popover" id="services-pop" role="dialog" aria-label="Estado de servicios" hidden>
+                <div class="popover-head">
+                    <div>
+                        <p class="micro">Heartbeat</p>
+                        <strong>Estado de servicios</strong>
+                    </div>
+                    <button type="button" class="icon-btn icon-btn-sm" id="services-refresh" title="Actualizar estado">
+                        <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg>
+                    </button>
+                </div>
+                <div class="service-list" id="service-list">
+                    <div class="skeleton-line"></div>
+                    <div class="skeleton-line"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="quick-downloads">
+            <button type="button" class="btn btn-quiet" data-download="pdf" title="Ficha PDF de la zona activa" aria-label="Descargar reporte PDF de la zona activa">
+                <svg class="icon" aria-hidden="true"><use href="#i-file"/></svg>
+                <span class="btn-label">Reporte PDF</span>
+            </button>
+            <button type="button" class="btn btn-quiet" data-download="csv" title="Exportar todas las zonas a CSV" aria-label="Exportar todas las zonas a CSV">
+                <svg class="icon" aria-hidden="true"><use href="#i-download"/></svg>
+                <span class="btn-label">Exportar CSV</span>
+            </button>
+        </div>
+
+        <button type="button" class="icon-btn bell-btn" id="notif-btn" aria-label="Abrir notificaciones" aria-expanded="false">
+            <svg class="icon" aria-hidden="true"><use href="#i-bell"/></svg>
+            <span class="count" id="notif-count" hidden>0</span>
+        </button>
+
+        <div class="user-chip" title="Sesión actual">
+            <span class="avatar" id="user-initial" aria-hidden="true">–</span>
+            <span class="user-meta">
+                <strong id="user-name">Sin sesión</strong>
+                <small id="user-role">—</small>
+            </span>
+        </div>
+
+        <button type="button" class="icon-btn" id="logout-btn" title="Cerrar sesión" aria-label="Cerrar sesión">
+            <svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>
+        </button>
+    </div>
+</header>
+
+<main class="workspace" id="workspace">
+    <!-- ===================== VISTA MAPA ===================== -->
+    <section class="view view-map" id="view-mapa" aria-label="Mapa operativo">
+        <div class="map-stage">
+            <div id="map" role="application" aria-label="Mapa de riesgo meteorológico de la Región de Valparaíso"></div>
+
+            <div class="map-control glass" id="layer-control">
+                <div class="control-head">
+                    <div>
+                        <p class="micro">Capas</p>
+                        <strong>Lectura territorial</strong>
+                    </div>
+                    <button type="button" class="icon-btn icon-btn-sm" id="control-collapse" aria-expanded="true" title="Contraer capas">
+                        <svg class="icon" aria-hidden="true"><use href="#i-chevron"/></svg>
+                    </button>
+                </div>
+
+                <div class="control-body" id="control-body">
+                    <div class="layer-list" role="group" aria-label="Capas del mapa">
+                        <button type="button" class="layer-row" data-layer="riesgo" role="switch" aria-checked="true">
+                            <span class="layer-text"><span class="layer-dot risk-gradient"></span>Riesgo por distrito<small data-layer-count="riesgo"></small></span>
+                            <span class="switch" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="layer-row" data-layer="infra" role="switch" aria-checked="false">
+                            <span class="layer-text"><span class="layer-dot infra-dot"></span>Infraestructura crítica<small data-layer-count="infra">Apagada</small></span>
+                            <span class="switch" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="layer-row" data-layer="ndvi" role="switch" aria-checked="false">
+                            <span class="layer-text"><span class="layer-dot ndvi-dot"></span>Vegetación NDVI<small data-layer-count="ndvi">Apagada</small></span>
+                            <span class="switch" aria-hidden="true"></span>
+                        </button>
+                        <button type="button" class="layer-row" data-layer="obs" role="switch" aria-checked="false">
+                            <span class="layer-text"><span class="layer-dot obs-dot"></span>Observaciones en terreno<small data-layer-count="obs">Apagada</small></span>
+                            <span class="switch" aria-hidden="true"></span>
+                        </button>
+                    </div>
+
+                    <div class="zone-picker">
+                        <p class="micro">Zona activa</p>
+                        <div id="zone-list" class="zone-list" role="listbox" aria-label="Seleccionar zona activa">
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line"></div>
+                            <div class="skeleton-line"></div>
+                        </div>
+                    </div>
+
+                    <p class="control-status" id="layer-status" aria-live="polite">Distritos locales · base cartográfica</p>
+                </div>
+            </div>
+
+            <div class="map-stamp glass" id="map-stamp" aria-live="polite">
+                <span class="stamp-dot" aria-hidden="true"></span>
+                <span id="stamp-text">Leyendo datos…</span>
+            </div>
+
+            <div class="map-legend glass" aria-label="Leyenda de riesgo">
+                <span class="legend-item"><span class="legend-dot level-BAJO"></span>Bajo</span>
+                <span class="legend-item"><span class="legend-dot level-MEDIO"></span>Medio</span>
+                <span class="legend-item"><span class="legend-dot level-ALTO"></span>Alto</span>
+                <span class="legend-item legend-muted"><span class="legend-dot level-SIN"></span>Sin datos</span>
+            </div>
+
+            <div class="map-ticker" id="map-ticker">
+                <p class="ticker-item">
+                    <svg class="icon" aria-hidden="true"><use href="#i-info"/></svg>
+                    <span>Estimación de riesgo meteorológico; no es pronóstico de ocurrencia.</span>
+                </p>
+                <p class="ticker-item ticker-season" id="ticker-season" hidden>
+                    <svg class="icon" aria-hidden="true"><use href="#i-alert"/></svg>
+                    <span>Fuera de la ventana estacional de entrenamiento (jul–sep 2026)</span>
+                </p>
+                <span class="ticker-meta" id="ticker-meta">Open-Meteo · lectura diaria</span>
+                <span class="ticker-credit">© OpenStreetMap</span>
+            </div>
+        </div>
+
+        <aside class="inspector glass" id="inspector" aria-label="Inspector de la zona activa">
+            <header class="inspector-head">
+                <div class="inspector-title">
+                    <p class="micro">Zona activa</p>
+                    <h2>
+                        <span id="active-zone-name">Cargando…</span>
+                        <span class="level-pill level-SIN" id="active-level">—</span>
+                    </h2>
+                    <p class="inspector-sub" id="active-meta">Esperando datos de riesgo</p>
+                </div>
+                <button type="button" class="icon-btn" id="refresh-btn" title="Actualizar todos los datos" aria-label="Actualizar todos los datos">
+                    <svg class="icon" aria-hidden="true"><use href="#i-refresh"/></svg>
+                </button>
+            </header>
+
+            <div class="tabs" role="tablist" aria-label="Inspector">
+                <button type="button" class="tab is-active" id="tab-diagnostico" role="tab" aria-selected="true" aria-controls="panel-diagnostico" data-tab="diagnostico">Diagnóstico</button>
+                <button type="button" class="tab" id="tab-simulador" role="tab" aria-selected="false" aria-controls="panel-simulador" data-tab="simulador">Simulador</button>
+                <button type="button" class="tab" id="tab-operacion" role="tab" aria-selected="false" aria-controls="panel-operacion" data-tab="operacion">Operación</button>
+                <button type="button" class="tab" id="tab-asistente" role="tab" aria-selected="false" aria-controls="panel-asistente" data-tab="asistente">Asistente</button>
+                <button type="button" class="tab" id="tab-usuarios" role="tab" aria-selected="false" aria-controls="panel-usuarios" data-tab="usuarios" hidden>Usuarios</button>
+            </div>
+
+            <section class="tabpanel" id="panel-diagnostico" role="tabpanel" aria-labelledby="tab-diagnostico">
+                <div class="panel-scroll" id="diag-body">
+                    <div class="skeleton skeleton-stats"></div>
+                    <div class="skeleton skeleton-block"></div>
+                    <div class="skeleton skeleton-block short"></div>
+                </div>
+            </section>
+
+            <section class="tabpanel" id="panel-simulador" role="tabpanel" aria-labelledby="tab-simulador" hidden>
+                <div class="panel-scroll" id="sim-body">
+                    <p class="empty-note">Selecciona una zona para cargar el escenario base.</p>
+                </div>
+            </section>
+
+            <section class="tabpanel" id="panel-operacion" role="tabpanel" aria-labelledby="tab-operacion" hidden>
+                <div class="subtabs" role="tablist" aria-label="Operación territorial">
+                    <button type="button" class="subtab is-active" role="tab" aria-selected="true" data-op="observaciones">Observaciones</button>
+                    <button type="button" class="subtab" role="tab" aria-selected="false" data-op="acciones">Acciones</button>
+                    <button type="button" class="subtab" role="tab" aria-selected="false" data-op="bitacora">Bitácora</button>
+                </div>
+                <div class="panel-scroll" id="op-body">
+                    <p class="empty-note">Cargando operación territorial…</p>
+                </div>
+            </section>
+
+            <section class="tabpanel" id="panel-asistente" role="tabpanel" aria-labelledby="tab-asistente" hidden>
+                <div class="chat-shell">
+                    <div class="chat-log" id="chat-log" aria-live="polite">
+                        <div class="chat-welcome">
+                            <span class="chat-orbit" aria-hidden="true"><svg viewBox="0 0 32 32"><use href="#i-contour"/></svg></span>
+                            <p class="micro">Asistente determinista</p>
+                            <h3>Pregunta sobre el riesgo</h3>
+                            <p>Respondo con los datos persistidos del sistema: nivel, factores, historial y recomendaciones.</p>
+                            <div class="chips" id="chat-chips">
+                                <button type="button" data-ask="¿Por qué Quilpué tiene riesgo alto?">¿Por qué Quilpué está en alto?</button>
+                                <button type="button" data-ask="¿Qué factores explican el riesgo de Valparaíso?">Factores de Valparaíso</button>
+                                <button type="button" data-ask="¿Recomendaciones para Viña del Mar?">Recomendaciones de Viña</button>
+                                <button type="button" data-ask="Compara las tres zonas">Comparar las tres zonas</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="chat-compose">
+                        <form id="chat-form">
+                            <label class="sr-only" for="chat-input">Pregunta al asistente</label>
+                            <textarea id="chat-input" rows="1" placeholder="Escribe una pregunta sobre riesgo territorial…"></textarea>
+                            <button type="submit" class="send-btn" aria-label="Enviar pregunta">
+                                <svg class="icon" aria-hidden="true"><use href="#i-send"/></svg>
+                            </button>
+                        </form>
+                        <p class="chat-note">Fuente: <code>local-determinista</code> · sin pronóstico de ocurrencia</p>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tabpanel" id="panel-usuarios" role="tabpanel" aria-labelledby="tab-usuarios" hidden>
+                <div class="panel-scroll" id="users-body">
+                    <p class="empty-note">Cargando usuarios…</p>
+                </div>
+            </section>
+        </aside>
+    </section>
+
+    <!-- ===================== VISTA TABLA ===================== -->
+    <section class="view view-table" id="view-tabla" aria-label="Tabla comparativa y ranking" hidden>
+        <div class="ranking">
+            <div class="ranking-main glass">
+                <header class="ranking-head">
+                    <div>
+                        <p class="micro">Priorización territorial</p>
+                        <h2>Ranking de zonas</h2>
+                        <p class="ranking-lede">Puntaje compuesto de riesgo, viviendas expuestas, infraestructura y vegetación.</p>
+                    </div>
+                    <div class="ranking-tools">
+                        <label class="search-box" for="ranking-search">
+                            <svg class="icon" aria-hidden="true"><use href="#i-search"/></svg>
+                            <input id="ranking-search" type="search" placeholder="Buscar comuna" autocomplete="off">
+                        </label>
+                        <div class="risk-filter" id="risk-filter" role="group" aria-label="Filtrar por nivel de riesgo">
+                            <button type="button" class="chip-btn is-active" data-risk="todos">Todas</button>
+                            <button type="button" class="chip-btn" data-risk="ALTO">Alto</button>
+                            <button type="button" class="chip-btn" data-risk="MEDIO">Medio</button>
+                            <button type="button" class="chip-btn" data-risk="BAJO">Bajo</button>
+                        </div>
+                    </div>
+                </header>
+
+                <div class="table-wrap" id="table-wrap" aria-live="polite">
+                    <div class="table-loading">
+                        <div class="skeleton skeleton-row"></div>
+                        <div class="skeleton skeleton-row"></div>
+                        <div class="skeleton skeleton-row"></div>
+                    </div>
+                </div>
+            </div>
+
+            <aside class="compare-rail glass" aria-label="Comparador de zonas">
+                <header class="compare-head">
+                    <div>
+                        <p class="micro">Comparador</p>
+                        <h2>Hasta 3 zonas</h2>
+                    </div>
+                    <button type="button" class="text-btn" id="compare-clear">Limpiar</button>
+                </header>
+                <div class="compare-body" id="compare-body">
+                    <p class="empty-note">Marca zonas en la tabla para contrastar su última evaluación real.</p>
+                </div>
+                <details class="formula-box">
+                    <summary>Cómo se calcula el puntaje</summary>
+                    <p id="ranking-formula">Cargando fórmula…</p>
+                    <div class="weight-list" id="ranking-weights"></div>
+                </details>
+            </aside>
+        </div>
+    </section>
+</main>
+
+<!-- ===================== NOTIFICACIONES ===================== -->
+<div class="drawer-scrim" id="drawer-scrim" hidden></div>
+<aside class="drawer" id="notif-drawer" role="dialog" aria-modal="true" aria-labelledby="notif-title" aria-hidden="true">
+    <header class="drawer-head">
+        <div>
+            <p class="micro">Centro de actividad</p>
+            <h2 id="notif-title">Notificaciones <span id="notif-unread" class="drawer-count">0</span></h2>
+        </div>
+        <button type="button" class="icon-btn" id="notif-close" aria-label="Cerrar notificaciones">
+            <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+        </button>
+    </header>
+    <div class="drawer-tools">
+        <div class="segmented segmented-sm" id="notif-filter" role="group" aria-label="Filtrar notificaciones">
+            <button type="button" class="is-active" data-filter="todas">Todas</button>
+            <button type="button" data-filter="no-leidas">No leídas</button>
+        </div>
+        <button type="button" class="text-btn" id="notif-refresh">Actualizar</button>
+    </div>
+    <div class="notif-list" id="notif-list">
+        <p class="empty-note">Cargando notificaciones…</p>
+    </div>
+</aside>
+
+<div class="toasts" id="toasts" aria-live="polite" aria-atomic="false"></div>
+
+<script src="leaflet.js"></script>
+<script src="app.js"></script>
 </body>
 </html>

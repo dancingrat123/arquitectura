@@ -19,15 +19,43 @@ jobs:
       with:
         python-version: '3.11'
 
-    - name: Instalar dependencias del API Service
+    - name: Instalar dependencias
       run: |
-        cd api-service
-        pip install -r requirements.txt
+        pip install pytest
+        pip install -r api-service/requirements.txt
+        pip install -r risk-service/requirements.txt
+        pip install -r data-service/requirements.txt
+        pip install -r data-service/requirements-dev.txt
+        pip install -r monitoring-service/requirements.txt
+        pip install -r notification-service/requirements.txt
 
-    - name: Correr Tests Unitarios
-      run: |
-        cd api-service
-        pytest test_main.py -v
+    - name: Tests del módulo compartido
+      working-directory: shared
+      run: python -m pytest . -v
+
+    - name: Tests de ml-pipeline
+      working-directory: ml-pipeline
+      run: python -m pytest . -v
+
+    - name: Tests de data-service
+      working-directory: data-service
+      run: python -m pytest tests -v
+
+    - name: Tests de risk-service
+      working-directory: risk-service
+      run: python -m pytest . -v
+
+    - name: Tests de api-service
+      working-directory: api-service
+      run: python -m pytest . -v
+
+    - name: Tests de monitoring-service
+      working-directory: monitoring-service
+      run: python -m pytest . -v
+
+    - name: Tests de notification-service
+      working-directory: notification-service
+      run: python -m pytest . -v
 
     - name: Verificar construcción de Docker Compose (Build)
       run: |

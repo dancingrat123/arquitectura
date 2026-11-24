@@ -1,0 +1,268 @@
+[
+  {
+    "slug": "algarrobo",
+    "nombre": "ALGARROBO",
+    "codigo": "5602",
+    "lat": -33.37973,
+    "lon": -71.64214
+  },
+  {
+    "slug": "cabildo",
+    "nombre": "CABILDO",
+    "codigo": "5402",
+    "lat": -32.42734,
+    "lon": -71.05869
+  },
+  {
+    "slug": "calle_larga",
+    "nombre": "CALLE LARGA",
+    "codigo": "5302",
+    "lat": -32.88235,
+    "lon": -70.64587
+  },
+  {
+    "slug": "cartagena",
+    "nombre": "CARTAGENA",
+    "codigo": "5603",
+    "lat": -33.53304,
+    "lon": -71.54119
+  },
+  {
+    "slug": "casablanca",
+    "nombre": "CASABLANCA",
+    "codigo": "5102",
+    "lat": -33.32667,
+    "lon": -71.40918
+  },
+  {
+    "slug": "catemu",
+    "nombre": "CATEMU",
+    "codigo": "5702",
+    "lat": -32.77153,
+    "lon": -70.99872
+  },
+  {
+    "slug": "concon",
+    "nombre": "CONCÓN",
+    "codigo": "5103",
+    "lat": -32.93328,
+    "lon": -71.5272
+  },
+  {
+    "slug": "el_quisco",
+    "nombre": "EL QUISCO",
+    "codigo": "5604",
+    "lat": -33.4136,
+    "lon": -71.65528
+  },
+  {
+    "slug": "el_tabo",
+    "nombre": "EL TABO",
+    "codigo": "5605",
+    "lat": -33.45304,
+    "lon": -71.63796
+  },
+  {
+    "slug": "hijuelas",
+    "nombre": "HIJUELAS",
+    "codigo": "5503",
+    "lat": -32.91804,
+    "lon": -71.07463
+  },
+  {
+    "slug": "isla_de_pascua",
+    "nombre": "ISLA DE PASCUA",
+    "codigo": "5201",
+    "lat": -27.14079,
+    "lon": -109.40772
+  },
+  {
+    "slug": "juan_fernandez",
+    "nombre": "JUAN FERNÁNDEZ",
+    "codigo": "5104",
+    "lat": -33.69044,
+    "lon": -79.45792
+  },
+  {
+    "slug": "la_cruz",
+    "nombre": "LA CRUZ",
+    "codigo": "5504",
+    "lat": -32.83881,
+    "lon": -71.23553
+  },
+  {
+    "slug": "la_ligua",
+    "nombre": "LA LIGUA",
+    "codigo": "5401",
+    "lat": -32.46494,
+    "lon": -71.22679
+  },
+  {
+    "slug": "limache",
+    "nombre": "LIMACHE",
+    "codigo": "5802",
+    "lat": -33.03972,
+    "lon": -71.26554
+  },
+  {
+    "slug": "llaillay",
+    "nombre": "LLAILLAY",
+    "codigo": "5703",
+    "lat": -32.8333,
+    "lon": -70.95312
+  },
+  {
+    "slug": "los_andes",
+    "nombre": "LOS ANDES",
+    "codigo": "5301",
+    "lat": -32.84659,
+    "lon": -70.59347
+  },
+  {
+    "slug": "la_calera",
+    "nombre": "La Calera",
+    "codigo": "5502",
+    "lat": -32.79061,
+    "lon": -71.2183
+  },
+  {
+    "slug": "nogales",
+    "nombre": "NOGALES",
+    "codigo": "5506",
+    "lat": -32.66879,
+    "lon": -71.14279
+  },
+  {
+    "slug": "olmue",
+    "nombre": "OLMUÉ",
+    "codigo": "5803",
+    "lat": -32.99632,
+    "lon": -71.12224
+  },
+  {
+    "slug": "panquehue",
+    "nombre": "PANQUEHUE",
+    "codigo": "5704",
+    "lat": -32.80298,
+    "lon": -70.81071
+  },
+  {
+    "slug": "papudo",
+    "nombre": "PAPUDO",
+    "codigo": "5403",
+    "lat": -32.52048,
+    "lon": -71.4084
+  },
+  {
+    "slug": "petorca",
+    "nombre": "PETORCA",
+    "codigo": "5404",
+    "lat": -32.25452,
+    "lon": -70.95293
+  },
+  {
+    "slug": "puchuncavi",
+    "nombre": "PUCHUNCAVÍ",
+    "codigo": "5105",
+    "lat": -32.72798,
+    "lon": -71.4779
+  },
+  {
+    "slug": "putaendo",
+    "nombre": "PUTAENDO",
+    "codigo": "5705",
+    "lat": -32.62221,
+    "lon": -70.67824
+  },
+  {
+    "slug": "quillota",
+    "nombre": "QUILLOTA",
+    "codigo": "5501",
+    "lat": -32.88665,
+    "lon": -71.25783
+  },
+  {
+    "slug": "quilpue",
+    "nombre": "QUILPUÉ",
+    "codigo": "5801",
+    "lat": -33.0486,
+    "lon": -71.4425
+  },
+  {
+    "slug": "quintero",
+    "nombre": "QUINTERO",
+    "codigo": "5107",
+    "lat": -32.78974,
+    "lon": -71.51574
+  },
+  {
+    "slug": "rinconada",
+    "nombre": "RINCONADA",
+    "codigo": "5303",
+    "lat": -32.91148,
+    "lon": -70.69735
+  },
+  {
+    "slug": "san_antonio",
+    "nombre": "SAN ANTONIO",
+    "codigo": "5601",
+    "lat": -33.57923,
+    "lon": -71.56541
+  },
+  {
+    "slug": "san_esteban",
+    "nombre": "SAN ESTEBAN",
+    "codigo": "5304",
+    "lat": -32.80393,
+    "lon": -70.59772
+  },
+  {
+    "slug": "san_felipe",
+    "nombre": "SAN FELIPE",
+    "codigo": "5701",
+    "lat": -32.74403,
+    "lon": -70.7131
+  },
+  {
+    "slug": "santa_maria",
+    "nombre": "SANTA MARÍA",
+    "codigo": "5706",
+    "lat": -32.74922,
+    "lon": -70.65776
+  },
+  {
+    "slug": "santo_domingo",
+    "nombre": "SANTO DOMINGO",
+    "codigo": "5606",
+    "lat": -33.71844,
+    "lon": -71.5996
+  },
+  {
+    "slug": "valparaiso",
+    "nombre": "VALPARAÍSO",
+    "codigo": "5101",
+    "lat": -33.0472,
+    "lon": -71.6127
+  },
+  {
+    "slug": "villa_alemana",
+    "nombre": "VILLA ALEMANA",
+    "codigo": "5804",
+    "lat": -33.05605,
+    "lon": -71.39152
+  },
+  {
+    "slug": "vina_del_mar",
+    "nombre": "VIÑA DEL MAR",
+    "codigo": "5109",
+    "lat": -33.0245,
+    "lon": -71.5518
+  },
+  {
+    "slug": "zapallar",
+    "nombre": "ZAPALLAR",
+    "codigo": "5405",
+    "lat": -32.55565,
+    "lon": -71.3148
+  }
+]

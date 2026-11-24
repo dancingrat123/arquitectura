@@ -1,0 +1,9 @@
+{
+  "fuente": "Sentinel-2 (ingesta batch de ejemplo)",
+  "fecha_captura": "2026-11-10",
+  "capas": [
+    {"zona": "quilpue", "indice": "NDVI", "valor": 0.18, "categoria": "seco", "fecha_captura": "2026-11-10", "fuente": "Sentinel-2 (ingesta batch de ejemplo)"},
+    {"zona": "vina_del_mar", "indice": "NDVI", "valor": 0.42, "categoria": "moderado", "fecha_captura": "2026-11-10", "fuente": "Sentinel-2 (ingesta batch de ejemplo)"},
+    {"zona": "valparaiso", "indice": "NDVI", "valor": 0.61, "categoria": "verde", "fecha_captura": "2026-11-10", "fuente": "Sentinel-2 (ingesta batch de ejemplo)"}
+  ]
+}
