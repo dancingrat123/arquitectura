@@ -146,6 +146,9 @@ Controles implementados en el gateway Nginx:
 - Acceso público de solo lectura en `/api/publico/` (mapa sin sesión, sin datos operativos).
 - Rate limiting: 10 solicitudes por segundo por IP, con ráfaga de 20.
 - Security headers: X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, Referrer-Policy.
+- `Content-Security-Policy` con scripts propios (`script-src 'self'`), estilos inline para Leaflet y teselas de OpenStreetMap como única fuente externa de imágenes.
+- `server_tokens off` (Nginx no expone su versión).
+- HSTS pendiente hasta usar un certificado emitido por una CA real.
 - Puertos de infraestructura en `127.0.0.1` (Prometheus, Grafana, panel de RabbitMQ).
 - AMQP, cAdvisor y node-exporter solo en la red interna de Docker (sin puerto en el host).
 - Gestión de secretos mediante variables de entorno en Docker Compose.
