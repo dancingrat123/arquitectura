@@ -166,8 +166,9 @@ services:
     image: rabbitmq:3-management-alpine
     container_name: sirif-rabbitmq
     ports:
-      - "5672:5672"
-      - "15672:15672"
+      # Solo el panel de administración, accesible desde el host local.
+      # AMQP (5672) queda en la red interna de Docker.
+      - "127.0.0.1:15672:15672"
     environment:
       RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
       RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASS}
@@ -203,7 +204,7 @@ services:
     image: prom/prometheus:latest
     container_name: sirif-prometheus
     ports:
-      - "9090:9090"
+      - "127.0.0.1:9090:9090"
     volumes:
       - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro
     restart: unless-stopped
@@ -212,7 +213,7 @@ services:
     image: grafana/grafana:latest
     container_name: sirif-grafana
     ports:
-      - "3000:3000"
+      - "127.0.0.1:3000:3000"
     environment:
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD}
     volumes:
@@ -226,8 +227,6 @@ services:
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: sirif-cadvisor
-    ports:
-      - "8080:8080"
     volumes:
       - /:/rootfs:ro
       - /var/run:/var/run:ro
@@ -240,8 +239,6 @@ services:
   node-exporter:
     image: prom/node-exporter:latest
     container_name: sirif-node-exporter
-    ports:
-      - "9100:9100"
     restart: unless-stopped
 
 volumes:
