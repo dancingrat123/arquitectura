@@ -3,9 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="color-scheme" content="dark">
+    <meta name="color-scheme" content="dark light">
     <title>SIRIF · Sala de control · Valparaíso</title>
     <link rel="icon" href="data:,">
+    <script>
+        /* Aplica el tema antes de pintar para evitar el destello inicial. */
+        (function () {
+            try {
+                var guardado = localStorage.getItem('sirif_tema');
+                var sistema = window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+                document.documentElement.dataset.theme = guardado === 'light' || guardado === 'dark' ? guardado : sistema;
+            } catch (error) {
+                document.documentElement.dataset.theme = 'dark';
+            }
+        })();
+    </script>
     <link rel="stylesheet" href="leaflet.css">
     <link rel="stylesheet" href="styles.css">
 </head>
@@ -111,11 +123,26 @@
             <circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/>
             <path d="M12 7v5l3 2" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
         </symbol>
+        <symbol id="i-sun" viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="4.2" fill="none" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M12 2.5v2.2M12 19.3v2.2M4.6 4.6l1.6 1.6M17.8 17.8l1.6 1.6M2.5 12h2.2M19.3 12h2.2M4.6 19.4l1.6-1.6M17.8 6.2l1.6-1.6" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </symbol>
+        <symbol id="i-moon" viewBox="0 0 24 24">
+            <path d="M20 14.4A8.4 8.4 0 0 1 9.6 4a8.5 8.5 0 1 0 10.4 10.4Z" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+        </symbol>
     </defs>
 </svg>
 
 <!-- ===================== LOGIN ===================== -->
-<div class="login-overlay" id="login" role="dialog" aria-modal="true" aria-labelledby="login-title">
+<div class="login-overlay" id="login" role="dialog" aria-modal="true" aria-labelledby="login-title" hidden>
+    <button type="button" class="login-close" id="login-close" aria-label="Cerrar y explorar el mapa sin cuenta">
+        <svg class="icon" aria-hidden="true"><use href="#i-close"/></svg>
+        <span>Explorar sin cuenta</span>
+    </button>
+    <button type="button" class="icon-btn theme-toggle login-theme" data-theme-toggle aria-label="Cambiar tema claro u oscuro">
+        <svg class="icon theme-icon-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+        <svg class="icon theme-icon-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+    </button>
     <div class="login-contour" aria-hidden="true">
         <svg viewBox="0 0 1400 900" preserveAspectRatio="xMidYMid slice">
             <g fill="none" stroke="currentColor" stroke-width="1">
@@ -139,15 +166,15 @@
                 Sala de control geoespacial
             </p>
             <h1 class="login-wordmark" id="login-title">SIRIF<span class="login-place">Valparaíso</span></h1>
-            <p class="login-lede">Riesgo meteorológico operacional para Quilpué, Viña del Mar y Valparaíso.</p>
+            <p class="login-lede">Mapa público de riesgo meteorológico para las 38 comunas de la Región de Valparaíso.</p>
             <dl class="login-facts">
+                <div>
+                    <dt>Cobertura</dt>
+                    <dd>38 comunas</dd>
+                </div>
                 <div>
                     <dt>Modelo</dt>
                     <dd>Random Forest calibrado</dd>
-                </div>
-                <div>
-                    <dt>Ventana</dt>
-                    <dd>2017–2025</dd>
                 </div>
                 <div>
                     <dt>Lectura</dt>
@@ -160,7 +187,7 @@
         <form class="login-card" id="login-form" novalidate>
             <p class="login-kicker">Acceso operativo</p>
             <h2>Entrar a la sala</h2>
-            <p class="login-hint">Usa la cuenta asignada por el administrador.</p>
+            <p class="login-hint">El mapa es de acceso público. Inicia sesión con tu cuenta para ver el diagnóstico completo, el simulador, la operación territorial y los reportes.</p>
 
             <label class="field" for="login-user">
                 <span>Usuario</span>
@@ -182,6 +209,11 @@
             <button type="submit" class="btn btn-primary login-submit" id="login-submit">
                 <span class="btn-label">Entrar a la sala</span>
                 <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+            </button>
+
+            <button type="button" class="login-guest" id="login-guest">
+                <svg class="icon" aria-hidden="true"><use href="#i-map"/></svg>
+                <span>Continuar sin cuenta · solo mapa público</span>
             </button>
 
             <p class="login-foot">
@@ -219,6 +251,11 @@
     </nav>
 
     <div class="topbar-actions">
+        <button type="button" class="icon-btn theme-toggle" data-theme-toggle aria-label="Cambiar tema claro u oscuro" title="Cambiar tema claro/oscuro">
+            <svg class="icon theme-icon-sun" aria-hidden="true"><use href="#i-sun"/></svg>
+            <svg class="icon theme-icon-moon" aria-hidden="true"><use href="#i-moon"/></svg>
+        </button>
+
         <div class="services-wrap">
             <button type="button" class="services-pill" id="services-btn" aria-expanded="false" aria-haspopup="dialog" aria-label="Estado de servicios">
                 <span class="signal-dot" id="services-dot" aria-hidden="true"></span>
@@ -261,12 +298,17 @@
         <div class="user-chip" title="Sesión actual">
             <span class="avatar" id="user-initial" aria-hidden="true">–</span>
             <span class="user-meta">
-                <strong id="user-name">Sin sesión</strong>
-                <small id="user-role">—</small>
+                <strong id="user-name">Invitado</strong>
+                <small id="user-role">Acceso público</small>
             </span>
         </div>
 
-        <button type="button" class="icon-btn" id="logout-btn" title="Cerrar sesión" aria-label="Cerrar sesión">
+        <button type="button" class="btn btn-primary guest-login-btn" id="login-open-btn" hidden>
+            <svg class="icon" aria-hidden="true"><use href="#i-user"/></svg>
+            <span class="btn-label">Iniciar sesión</span>
+        </button>
+
+        <button type="button" class="icon-btn" id="logout-btn" title="Cerrar sesión" aria-label="Cerrar sesión" hidden>
             <svg class="icon" aria-hidden="true"><use href="#i-logout"/></svg>
         </button>
     </div>

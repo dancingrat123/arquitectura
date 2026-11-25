@@ -109,6 +109,46 @@
     const $ = (selector, root = document) => root.querySelector(selector);
     const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
 
+    /* ----------------------------------------------------------------------
+       Tema claro / oscuro
+       ---------------------------------------------------------------------- */
+
+    const TEMA_KEY = 'sirif_tema';
+
+    function temaActual() {
+        return document.documentElement.dataset.theme === 'light' ? 'light' : 'dark';
+    }
+
+    function aplicarTema(tema, persistir = true) {
+        const destino = tema === 'light' ? 'light' : 'dark';
+        document.documentElement.dataset.theme = destino;
+        const meta = document.querySelector('meta[name="color-scheme"]');
+        if (meta) meta.setAttribute('content', destino === 'dark' ? 'dark light' : 'light dark');
+        $$('[data-theme-toggle]').forEach((boton) => {
+            const etiqueta = destino === 'dark' ? 'Cambiar a tema claro' : 'Cambiar a tema oscuro';
+            boton.setAttribute('aria-label', etiqueta);
+            boton.setAttribute('title', etiqueta);
+            boton.setAttribute('aria-pressed', String(destino === 'light'));
+        });
+        if (persistir) {
+            try { localStorage.setItem(TEMA_KEY, destino); } catch (error) { /* modo privado */ }
+        }
+        // El mapa pinta distritos y pines con colores resueltos en JS.
+        if (state.map) {
+            renderDistricts();
+            renderZoneMarkers();
+        }
+    }
+
+    function alternarTema() {
+        aplicarTema(temaActual() === 'dark' ? 'light' : 'dark');
+    }
+
+    function esInvitado() {
+        return document.body.classList.contains('is-guest');
+    }
+
+
     const esc = (value) => String(value ?? '').replace(/[&<>"']/g, (char) => ({
         '&': '&amp;',
         '<': '&lt;',
@@ -260,8 +300,8 @@
         }
         const response = await fetch(path, { ...options, headers });
         if (response.status === 401) {
-            expireSession();
-            throw new Error('La sesión expiró. Vuelve a entrar.');
+            if (state.token) expireSession();
+            throw new Error('Necesitas iniciar sesión para acceder a esta función.');
         }
         return response;
     }
@@ -316,6 +356,7 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
         wireGlobalEvents();
+        aplicarTema(temaActual(), false);
         await initMap();
         const token = localStorage.getItem('sirif_token');
         if (token) {
@@ -326,18 +367,112 @@
             $('#login').hidden = true;
             await enterApp();
         } else {
-            showLogin();
+            await enterGuest();
         }
     });
 
-    function showLogin() {
+    /** Acceso público: mapa de riesgo, sin JWT ni datos operativos. */
+    async function enterGuest() {
+        document.body.classList.add('is-guest');
+        $('#login').hidden = true;
+        applyGuestChrome();
+        state.vista = 'mapa';
+        await loadZonas();
+        await loadDistritos();
+        renderGuestPanel();
+        if (state.map) {
+            state.map.invalidateSize();
+            state.mapHasFit = false;
+            fitMapToData();
+        }
+        startPolling();
+    }
+
+    function applyGuestChrome() {
+        $('#user-name').textContent = 'Invitado';
+        $('#user-role').textContent = 'Acceso público';
+        $('#user-initial').textContent = '–';
+        $('#login-open-btn').hidden = false;
+        $('#logout-btn').hidden = true;
+        $('#notif-btn').hidden = true;
+        $('.services-wrap').hidden = true;
+        $('.quick-downloads').hidden = true;
+        $('#refresh-btn').hidden = true;
+        $$('.view-btn[data-view="tabla"]').forEach((boton) => {
+            boton.classList.add('is-locked');
+            boton.setAttribute('title', 'Inicia sesión para ver la tabla y el ranking');
+        });
+        $$('.layer-row[data-layer]:not([data-layer="riesgo"])').forEach((boton) => {
+            boton.disabled = true;
+            boton.setAttribute('aria-disabled', 'true');
+            boton.setAttribute('title', 'Inicia sesión para usar esta capa');
+        });
+    }
+
+    function applyAuthChrome() {
+        $('#login-open-btn').hidden = true;
+        $('#logout-btn').hidden = false;
+        $('#notif-btn').hidden = false;
+        $('.services-wrap').hidden = false;
+        $('.quick-downloads').hidden = false;
+        $('#refresh-btn').hidden = false;
+        $$('.view-btn[data-view="tabla"]').forEach((boton) => {
+            boton.classList.remove('is-locked');
+            boton.removeAttribute('title');
+        });
+        $$('.layer-row[data-layer]:not([data-layer="riesgo"])').forEach((boton) => {
+            boton.disabled = false;
+            boton.removeAttribute('aria-disabled');
+            boton.removeAttribute('title');
+        });
+    }
+
+    function renderGuestPanel() {
+        if (!esInvitado()) return;
+        const contenedor = $('#diag-body');
+        if (!contenedor) return;
+        const zona = activeZone();
+        const nivel = zona ? levelClass(zona.nivel_riesgo) : 'SIN';
+        const titulo = zona ? (zona.comuna || prettifySlug(zona.zona)) : 'Región de Valparaíso';
+        contenedor.innerHTML = `
+            <section class="guest-panel">
+                <p class="micro">Vista pública · riesgo meteorológico</p>
+                <h3>Acceso público</h3>
+                <p class="guest-reading">${esc(titulo)}${zona && zona.probabilidad != null ? ` · Probabilidad ${pct(zona.probabilidad)} · <span class="level-text level-${nivel}">${nivel}</span>` : ''}</p>
+                <p class="guest-lede">El mapa de riesgo es abierto. Para operar la sala necesitas una cuenta asignada por el administrador.</p>
+                <ul class="guest-features">
+                    <li>${icon('activity')} Diagnóstico, factores e historial</li>
+                    <li>${icon('layers')} Simulador de escenarios</li>
+                    <li>${icon('alert')} Alertas y notificaciones</li>
+                    <li>${icon('file')} Reportes PDF y exportación CSV</li>
+                </ul>
+                <button type="button" class="btn btn-primary guest-cta" data-open-login>
+                    ${icon('user')}<span>Iniciar sesión</span>
+                </button>
+                <p class="guest-foot">¿Necesitas una cuenta? Solicítala al administrador del sistema.</p>
+            </section>`;
+        contenedor.querySelector('[data-open-login]')?.addEventListener('click', openLogin);
+    }
+
+    function openLogin() {
         const overlay = $('#login');
         overlay.hidden = false;
         overlay.classList.remove('is-leaving');
-        $('#user-name').textContent = 'Sin sesión';
-        $('#user-role').textContent = '—';
-        $('#user-initial').textContent = '–';
+        $('#login-error').hidden = true;
         window.setTimeout(() => $('#login-user')?.focus(), 120);
+    }
+
+    function closeLogin() {
+        const overlay = $('#login');
+        overlay.classList.add('is-leaving');
+        window.setTimeout(() => {
+            overlay.hidden = true;
+            overlay.classList.remove('is-leaving');
+        }, 280);
+        if (!state.token) {
+            if (!esInvitado()) enterGuest();
+            else window.setTimeout(() => state.map && state.map.invalidateSize(), 120);
+        }
     }
 
     async function handleLogin(event) {
@@ -392,8 +527,10 @@
     }
 
     async function enterApp() {
-        const eraInvitado = document.body.classList.contains('is-guest');
+        const eraInvitado = esInvitado();
         document.body.classList.remove('is-guest');
+        $('#login').hidden = true;
+        applyAuthChrome();
         applyUserChrome();
         applyRoleUI();
         if (eraInvitado && state.map) {
@@ -447,7 +584,8 @@
 
     async function loadZonas() {
         try {
-            const data = await apiJson('/api/riesgo/todas');
+            const ruta = esInvitado() ? '/api/publico/zonas' : '/api/riesgo/todas';
+            const data = await apiJson(ruta);
             state.zonas = Array.isArray(data.zonas) ? data.zonas : [];
             const slugs = state.zonas.map((zona) => zona.zona);
             if (!slugs.includes(state.zonaActiva)) {
@@ -459,6 +597,7 @@
             renderTicker();
             renderZoneMarkers();
             fitMapToData();
+            if (esInvitado()) renderGuestPanel();
         } catch (error) {
             state.zonas = [];
             $('#zone-list').innerHTML = `<div class="inline-error">${icon('alert')}<span>${esc(error.message)}</span></div>`;
@@ -466,13 +605,15 @@
             renderActiveHeader();
             renderTicker();
             renderZoneMarkers();
+            if (esInvitado()) renderGuestPanel();
             toast(error.message, 'error');
         }
     }
 
     async function loadDistritos() {
         try {
-            const data = await apiJson('/api/datos/distritos');
+            const ruta = esInvitado() ? '/api/publico/distritos' : '/api/datos/distritos';
+            const data = await apiJson(ruta);
             state.distritos = (data && data.distritos) || {};
             renderDistricts();
             updateLayerCounts();
@@ -712,26 +853,21 @@
             state.districtsLayer = null;
         }
         const riesgoActivo = state.capas.riesgo;
-        const invitado = document.body.classList.contains('is-guest');
+        const temaClaro = temaActual() === 'light';
 
         state.districtsLayer = L.geoJSON(state.geojson, {
             style: (feature) => {
-                if (invitado) {
-                    return {
-                        color: 'rgba(34, 211, 238, 0.42)',
-                        weight: 1.2,
-                        opacity: 0.9,
-                        fillColor: '#0E7490',
-                        fillOpacity: 0.3
-                    };
-                }
                 const nivel = districtLevel(districtCode(feature));
                 return {
-                    color: riesgoActivo ? 'rgba(56, 189, 248, 0.36)' : 'rgba(148, 163, 184, 0.18)',
+                    color: riesgoActivo
+                        ? (temaClaro ? 'rgba(14, 116, 144, 0.34)' : 'rgba(56, 189, 248, 0.36)')
+                        : (temaClaro ? 'rgba(100, 116, 139, 0.22)' : 'rgba(148, 163, 184, 0.18)'),
                     weight: 1,
                     opacity: 0.95,
                     fillColor: COLORES_NIVEL[nivel] || COLORES_NIVEL.SIN,
-                    fillOpacity: riesgoActivo ? (nivel === 'SIN' ? 0.1 : 0.26) : 0.035
+                    fillOpacity: riesgoActivo
+                        ? (nivel === 'SIN' ? 0.08 : (temaClaro ? 0.3 : 0.26))
+                        : 0.035
                 };
             },
             onEachFeature: (feature, layer) => {
@@ -740,7 +876,7 @@
                 layer.on('mouseover', () => {
                     layer.setStyle({
                         weight: 1.6,
-                        color: 'rgba(34, 211, 238, 0.72)',
+                        color: temaClaro ? 'rgba(14, 116, 144, 0.62)' : 'rgba(34, 211, 238, 0.72)',
                         fillOpacity: riesgoActivo ? 0.46 : 0.09
                     });
                 });
@@ -869,6 +1005,21 @@
 
     function selectZone(slug, options = {}) {
         if (!slug) return;
+        if (esInvitado()) {
+            state.zonaActiva = slug;
+            localStorage.setItem('sirif_zona', slug);
+            renderZoneList();
+            renderActiveHeader();
+            renderTicker();
+            renderZoneMarkers();
+            renderGuestPanel();
+            if (options.fly !== false && state.map && COORDENADAS[slug]) {
+                state.map.flyTo([COORDENADAS[slug].lat, COORDENADAS[slug].lng], Math.max(state.map.getZoom(), 11), {
+                    duration: 0.7
+                });
+            }
+            return;
+        }
         state.zonaActiva = slug;
         localStorage.setItem('sirif_zona', slug);
         state.explicacion = null;
@@ -1224,6 +1375,10 @@
        ---------------------------------------------------------------------- */
 
     async function loadDiagnostico() {
+        if (esInvitado()) {
+            renderGuestPanel();
+            return;
+        }
         const zona = state.zonaActiva;
         const seq = ++state.diagSeq;
         if (!zona) return;
@@ -2099,6 +2254,11 @@
 
     function setVista(vista) {
         if (vista !== 'mapa' && vista !== 'tabla') return;
+        if (esInvitado() && vista === 'tabla') {
+            toast('Inicia sesión para ver la tabla y el ranking territorial.', 'info');
+            openLogin();
+            return;
+        }
         state.vista = vista;
         $$('.view-btn').forEach((boton) => {
             const activo = boton.dataset.view === vista;
@@ -2469,6 +2629,13 @@
         const boton = $('#refresh-btn');
         boton.classList.add('is-busy');
         try {
+            if (esInvitado()) {
+                await loadZonas();
+                await loadDistritos();
+                renderGuestPanel();
+                toast('Mapa público actualizado.', 'ok');
+                return;
+            }
             await loadZonas();
             await Promise.allSettled([
                 loadDistritos(),
@@ -2491,10 +2658,15 @@
 
     function startPolling() {
         if (state.polling.length) return;
+        let ticks = 0;
         state.polling.push(window.setInterval(() => {
+            ticks += 1;
             if (state.token) {
                 loadNotificaciones();
                 loadServicios();
+            } else if (esInvitado() && ticks % 5 === 0) {
+                // El mapa público se refresca cada 5 minutos, sin sesión.
+                loadZonas();
             }
         }, 60000));
     }
@@ -2505,6 +2677,16 @@
 
     function wireGlobalEvents() {
         $('#login-form').addEventListener('submit', handleLogin);
+
+        $$('[data-theme-toggle]').forEach((boton) => {
+            boton.addEventListener('click', alternarTema);
+        });
+        $('#login-open-btn')?.addEventListener('click', openLogin);
+        $('#login-close')?.addEventListener('click', closeLogin);
+        $('#login-guest')?.addEventListener('click', closeLogin);
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && !$('#login').hidden) closeLogin();
+        });
 
         $('#toggle-password').addEventListener('click', () => {
             const input = $('#login-password');
@@ -2810,6 +2992,7 @@
     }
 
     function setTab(tab) {
+        if (esInvitado()) return;
         if (tab === 'usuarios' && state.rol !== 'admin') return;
         state.tab = tab;
         $$('.tab[data-tab]').forEach((boton) => {

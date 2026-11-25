@@ -78,11 +78,28 @@ docker compose down
 | Servicio | URL | Credenciales |
 |---|---|---|
 | Frontend | http://localhost:9080 | admin / sirif2026 |
+| Mapa público (sin sesión) | http://localhost:9080 | - |
 | API de riesgo | http://localhost:9080/api/riesgo/todas | admin / sirif2026 |
 | API de distritos | http://localhost:9080/api/datos/distritos | admin / sirif2026 |
+| API pública de zonas | http://localhost:9080/api/publico/zonas | - |
 | Prometheus | http://localhost:9090 | - |
 | Grafana | http://localhost:3000 | admin / admin |
 | RabbitMQ | http://localhost:15672 | sirif / sirif2026 |
+
+### Acceso público y sesión
+
+El mapa de riesgo es de **acceso público**: al entrar sin sesión se muestran las
+38 comunas coloreadas, la leyenda y el nivel/probabilidad de la comuna
+seleccionada. Los endpoints `/api/publico/zonas` y `/api/publico/distritos` son
+de solo lectura, no reciben parámetros y no exponen usuarios, bitácora,
+acciones ni factores explicativos.
+
+El resto de la plataforma (diagnóstico, historial, simulador, operación
+territorial, alertas, usuarios, reportes y exportaciones) exige **iniciar
+sesión**. Las cuentas las crea el administrador; no hay auto-registro.
+
+La interfaz incluye **tema claro y oscuro**, con detección inicial del tema del
+sistema y preferencia persistida en `localStorage` (`sirif_tema`).
 
 ## Escalado y balanceo
 
@@ -125,7 +142,8 @@ Para generar tráfico y ver métricas:
 
 Controles implementados en el gateway Nginx:
 
-- HTTP Basic Auth en rutas `/api/`.
+- Autenticación JWT Bearer en las rutas `/api/` (excepto `/api/publico/`).
+- Acceso público de solo lectura en `/api/publico/` (mapa sin sesión, sin datos operativos).
 - Rate limiting: 10 solicitudes por segundo por IP, con ráfaga de 20.
 - Security headers: X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, Referrer-Policy.
 - Gestión de secretos mediante variables de entorno en Docker Compose.

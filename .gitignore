@@ -24,5 +24,7 @@ Thumbs.db
 
 # Entorno
 .env
+# Artefactos de herramientas de navegador
+.playwright-mcp/
 # Modelo grande (296MB): se genera con ml-pipeline/train_comunal.py
 risk-service/modelo_riesgo_comunal.pkl
