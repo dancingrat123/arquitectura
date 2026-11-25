@@ -94,9 +94,15 @@ seleccionada. Los endpoints `/api/publico/zonas` y `/api/publico/distritos` son
 de solo lectura, no reciben parámetros y no exponen usuarios, bitácora,
 acciones ni factores explicativos.
 
-El resto de la plataforma (diagnóstico, historial, simulador, operación
-territorial, alertas, usuarios, reportes y exportaciones) exige **iniciar
-sesión**. Las cuentas las crea el administrador; no hay auto-registro.
+El resto de la plataforma (diagnóstico, historial, ranking, simulador,
+operación territorial, alertas, usuarios, reportes y exportaciones) exige
+**iniciar sesión**.
+
+El **registro es autoservicio** desde la pantalla de login: con usuario y
+contraseña (sin correo) se crea al instante una cuenta con perfil
+`visualizador` (solo lectura). El servidor fija el rol; el usuario no puede
+auto-elevarse. La asignación de `analista` o `admin`, la desactivación y el
+reseteo de contraseñas siguen siendo exclusivos del administrador.
 
 La interfaz incluye **tema claro y oscuro**, con detección inicial del tema del
 sistema y preferencia persistida en `localStorage` (`sirif_tema`).
@@ -145,6 +151,8 @@ Controles implementados en el gateway Nginx:
 - Autenticación JWT Bearer en las rutas `/api/` (excepto `/api/publico/`).
 - Acceso público de solo lectura en `/api/publico/` (mapa sin sesión, sin datos operativos).
 - Rate limiting: 10 solicitudes por segundo por IP, con ráfaga de 20.
+- Auto-registro limitado a 3 cuentas por minuto por IP.
+- Contraseñas PBKDF2 (mínimo 8 caracteres); el registro solo puede crear `visualizador`.
 - Security headers: X-Frame-Options, X-Content-Type-Options, X-XSS-Protection, Referrer-Policy.
 - `Content-Security-Policy` con scripts propios (`script-src 'self'`), estilos inline para Leaflet y teselas de OpenStreetMap como única fuente externa de imágenes.
 - `server_tokens off` (Nginx no expone su versión).

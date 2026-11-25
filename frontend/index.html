@@ -205,9 +205,61 @@
                 <span>Continuar sin cuenta · solo mapa público</span>
             </button>
 
+            <p class="login-switch">¿No tienes cuenta? <button type="button" class="link-btn" id="show-register">Crear cuenta</button></p>
+
             <p class="login-foot">
                 <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
                 Sesión cifrada · expira en 60 minutos
+            </p>
+        </form>
+
+        <form class="login-card" id="register-form" novalidate hidden>
+            <p class="login-kicker">Registro abierto</p>
+            <h2>Crear cuenta</h2>
+            <p class="login-hint">Regístrate para ver el diagnóstico completo, historial, ranking, reportes y asistente. La cuenta se crea al instante con perfil <strong>Visualizador</strong>; los permisos de escritura los asigna un administrador.</p>
+
+            <label class="field" for="register-user">
+                <span>Usuario</span>
+                <input id="register-user" name="username" type="text" autocomplete="username" spellcheck="false" minlength="3" maxlength="50" pattern="[A-Za-z0-9._-]{3,50}" placeholder="nombre.usuario" required>
+            </label>
+
+            <label class="field" for="register-name">
+                <span>Nombre completo <small>(opcional)</small></span>
+                <input id="register-name" name="nombre_completo" type="text" autocomplete="name" maxlength="100" placeholder="Nombre y apellido">
+            </label>
+
+            <label class="field" for="register-password">
+                <span>Contraseña</span>
+                <span class="field-inline">
+                    <input id="register-password" name="password" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+                    <button type="button" class="reveal" id="toggle-register-password" aria-label="Mostrar contraseña" aria-pressed="false">
+                        <svg class="icon" aria-hidden="true"><use href="#i-eye"/></svg>
+                    </button>
+                </span>
+            </label>
+
+            <label class="field" for="register-password2">
+                <span>Repetir contraseña</span>
+                <input id="register-password2" name="password2" type="password" autocomplete="new-password" minlength="8" maxlength="128" required>
+            </label>
+
+            <p class="form-error" id="register-error" role="alert" hidden></p>
+
+            <button type="submit" class="btn btn-primary login-submit" id="register-submit">
+                <span class="btn-label">Crear cuenta y entrar</span>
+                <svg class="icon" aria-hidden="true"><use href="#i-arrow"/></svg>
+            </button>
+
+            <button type="button" class="login-guest" id="register-guest">
+                <svg class="icon" aria-hidden="true"><use href="#i-map"/></svg>
+                <span>Continuar sin cuenta · solo mapa público</span>
+            </button>
+
+            <p class="login-switch">¿Ya tienes cuenta? <button type="button" class="link-btn" id="show-login">Iniciar sesión</button></p>
+
+            <p class="login-foot">
+                <svg class="icon" aria-hidden="true"><use href="#i-lock"/></svg>
+                Cuenta de solo lectura · puedes desactivarla cuando quieras
             </p>
         </form>
     </div>

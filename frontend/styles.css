@@ -4629,6 +4629,29 @@ input[type="range"]::-moz-range-thumb {
     color: var(--text);
 }
 
+.login-switch {
+    margin-top: 12px;
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--muted);
+}
+
+.link-btn {
+    border: 0;
+    padding: 0;
+    background: transparent;
+    color: var(--cyan-bright);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 2px;
+}
+
+.link-btn:hover {
+    color: var(--text);
+}
+
 /* Botón de acceso y tarjeta pública. */
 .guest-login-btn {
     height: 32px;

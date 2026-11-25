@@ -439,27 +439,47 @@
                 <p class="micro">Vista pública · riesgo meteorológico</p>
                 <h3>Acceso público</h3>
                 <p class="guest-reading">${esc(titulo)}${zona && zona.probabilidad != null ? ` · Probabilidad ${pct(zona.probabilidad)} · <span class="level-text level-${nivel}">${nivel}</span>` : ''}</p>
-                <p class="guest-lede">El mapa de riesgo es abierto. Para operar la sala necesitas una cuenta asignada por el administrador.</p>
+                <p class="guest-lede">El mapa de riesgo es abierto. Crea una cuenta gratuita para ver el diagnóstico completo, historial, ranking, reportes y asistente. Los permisos de escritura los asigna un administrador.</p>
                 <ul class="guest-features">
                     <li>${icon('activity')} Diagnóstico, factores e historial</li>
-                    <li>${icon('layers')} Simulador de escenarios</li>
-                    <li>${icon('alert')} Alertas y notificaciones</li>
+                    <li>${icon('table')} Ranking y comparador de zonas</li>
                     <li>${icon('file')} Reportes PDF y exportación CSV</li>
+                    <li>${icon('send')} Asistente explicativo</li>
                 </ul>
                 <button type="button" class="btn btn-primary guest-cta" data-open-login>
                     ${icon('user')}<span>Iniciar sesión</span>
                 </button>
-                <p class="guest-foot">¿Necesitas una cuenta? Solicítala al administrador del sistema.</p>
+                <button type="button" class="btn btn-ghost guest-cta" data-open-register>
+                    ${icon('plus')}<span>Crear cuenta gratis</span>
+                </button>
+                <p class="guest-foot">Registro abierto · perfil Visualizador (solo lectura). Sin correo ni verificación.</p>
             </section>`;
         contenedor.querySelector('[data-open-login]')?.addEventListener('click', openLogin);
+        contenedor.querySelector('[data-open-register]')?.addEventListener('click', openRegister);
     }
 
     function openLogin() {
+        mostrarFormulario('login');
         const overlay = $('#login');
         overlay.hidden = false;
         overlay.classList.remove('is-leaving');
-        $('#login-error').hidden = true;
         window.setTimeout(() => $('#login-user')?.focus(), 120);
+    }
+
+    function openRegister() {
+        mostrarFormulario('registro');
+        const overlay = $('#login');
+        overlay.hidden = false;
+        overlay.classList.remove('is-leaving');
+        window.setTimeout(() => $('#register-user')?.focus(), 120);
+    }
+
+    function mostrarFormulario(tipo) {
+        const esLogin = tipo !== 'registro';
+        $('#login-form').hidden = !esLogin;
+        $('#register-form').hidden = esLogin;
+        $('#login-error').hidden = true;
+        $('#register-error').hidden = true;
     }
 
     function closeLogin() {
@@ -473,6 +493,33 @@
             if (!esInvitado()) enterGuest();
             else window.setTimeout(() => state.map && state.map.invalidateSize(), 120);
         }
+    }
+
+    async function iniciarSesionCon(usuario, password, mensajeOk = '') {
+        const cuerpo = new URLSearchParams({ username: usuario, password });
+        const response = await fetch('/token', { method: 'POST', body: cuerpo });
+        if (!response.ok) {
+            throw new Error(response.status === 401
+                ? 'Usuario o contraseña incorrectos.'
+                : `No fue posible iniciar sesión (${response.status}).`);
+        }
+        const data = await response.json();
+        state.token = data.access_token;
+        state.rol = data.rol || '';
+        state.nombre = data.nombre_completo || usuario;
+        state.username = usuario;
+        localStorage.setItem('sirif_token', state.token);
+        localStorage.setItem('sirif_rol', state.rol);
+        localStorage.setItem('sirif_nombre', state.nombre);
+        localStorage.setItem('sirif_username', state.username);
+        $('#login-password').value = '';
+        $('#register-password').value = '';
+        $('#register-password2').value = '';
+        $('#login').classList.add('is-leaving');
+        window.setTimeout(() => { $('#login').hidden = true; }, 580);
+        await enterApp();
+        toast(mensajeOk || `Sesión iniciada · ${NOMBRE_ROL[state.rol] || state.rol}`, 'ok');
+        return data;
     }
 
     async function handleLogin(event) {
@@ -494,27 +541,7 @@
         boton.querySelector('.btn-label').textContent = 'Verificando…';
 
         try {
-            const cuerpo = new URLSearchParams({ username: usuario, password });
-            const response = await fetch('/token', { method: 'POST', body: cuerpo });
-            if (!response.ok) {
-                throw new Error(response.status === 401
-                    ? 'Usuario o contraseña incorrectos.'
-                    : `No fue posible iniciar sesión (${response.status}).`);
-            }
-            const data = await response.json();
-            state.token = data.access_token;
-            state.rol = data.rol || '';
-            state.nombre = data.nombre_completo || usuario;
-            state.username = usuario;
-            localStorage.setItem('sirif_token', state.token);
-            localStorage.setItem('sirif_rol', state.rol);
-            localStorage.setItem('sirif_nombre', state.nombre);
-            localStorage.setItem('sirif_username', state.username);
-            $('#login-password').value = '';
-            $('#login').classList.add('is-leaving');
-            window.setTimeout(() => { $('#login').hidden = true; }, 580);
-            await enterApp();
-            toast(`Sesión iniciada · ${NOMBRE_ROL[state.rol] || state.rol}`, 'ok');
+            await iniciarSesionCon(usuario, password);
         } catch (err) {
             error.textContent = err.message || 'No fue posible iniciar sesión.';
             error.hidden = false;
@@ -523,6 +550,61 @@
             boton.disabled = false;
             boton.classList.remove('is-busy');
             boton.querySelector('.btn-label').textContent = 'Entrar a la sala';
+        }
+    }
+
+    async function handleRegister(event) {
+        event.preventDefault();
+        const usuario = $('#register-user').value.trim().toLowerCase();
+        const nombre = $('#register-name').value.trim();
+        const password = $('#register-password').value;
+        const password2 = $('#register-password2').value;
+        const error = $('#register-error');
+        const boton = $('#register-submit');
+
+        error.hidden = true;
+        if (!usuario || !password) {
+            error.textContent = 'Completa usuario y contraseña.';
+            error.hidden = false;
+            return;
+        }
+        if (password.length < 8) {
+            error.textContent = 'La contraseña debe tener al menos 8 caracteres.';
+            error.hidden = false;
+            $('#register-password').focus();
+            return;
+        }
+        if (password !== password2) {
+            error.textContent = 'Las contraseñas no coinciden.';
+            error.hidden = false;
+            $('#register-password2').select();
+            return;
+        }
+
+        boton.disabled = true;
+        boton.classList.add('is-busy');
+        boton.querySelector('.btn-label').textContent = 'Creando cuenta…';
+
+        try {
+            const response = await fetch('/api/publico/registro', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    username: usuario,
+                    password,
+                    nombre_completo: nombre || null
+                })
+            });
+            if (!response.ok) throw new Error(await errorMessage(response));
+            await iniciarSesionCon(usuario, password, 'Cuenta creada · Visualizador');
+            $('#register-form').reset();
+        } catch (err) {
+            error.textContent = err.message || 'No fue posible crear la cuenta.';
+            error.hidden = false;
+        } finally {
+            boton.disabled = false;
+            boton.classList.remove('is-busy');
+            boton.querySelector('.btn-label').textContent = 'Crear cuenta y entrar';
         }
     }
 
@@ -2677,6 +2759,10 @@
 
     function wireGlobalEvents() {
         $('#login-form').addEventListener('submit', handleLogin);
+        $('#register-form').addEventListener('submit', handleRegister);
+        $('#show-register')?.addEventListener('click', openRegister);
+        $('#show-login')?.addEventListener('click', openLogin);
+        $('#register-guest')?.addEventListener('click', closeLogin);
 
         $$('[data-theme-toggle]').forEach((boton) => {
             boton.addEventListener('click', alternarTema);
@@ -2686,6 +2772,15 @@
         $('#login-guest')?.addEventListener('click', closeLogin);
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape' && !$('#login').hidden) closeLogin();
+        });
+
+        $('#toggle-register-password').addEventListener('click', () => {
+            const input = $('#register-password');
+            const visible = input.type === 'text';
+            input.type = visible ? 'password' : 'text';
+            $('#toggle-register-password').setAttribute('aria-pressed', String(!visible));
+            $('#toggle-register-password').setAttribute('aria-label', visible ? 'Mostrar contraseña' : 'Ocultar contraseña');
+            input.focus();
         });
 
         $('#toggle-password').addEventListener('click', () => {
