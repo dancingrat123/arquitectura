@@ -968,6 +968,77 @@ async def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(
         "nombre_completo": usuario.get("nombre_completo") or usuario["username"],
     }
 
+# --- Acceso público de solo lectura -----------------------------------------
+# El mapa de riesgo es público; el resto de la plataforma exige sesión. Estos
+# endpoints no reciben parámetros y devuelven únicamente la información
+# cartográfica: nunca usuarios, bitácora, acciones ni factores explicativos.
+
+
+def _zona_publica(fila) -> dict:
+    return {
+        "zona": fila["zona"],
+        "comuna": fila.get("comuna"),
+        "codigo_comuna": fila.get("codigo_comuna"),
+        "nivel_riesgo": fila.get("nivel_riesgo"),
+        "probabilidad": (
+            None if fila.get("probabilidad") is None else float(fila["probabilidad"])
+        ),
+        "fecha_evaluacion": _iso(fila.get("fecha_evaluacion")),
+        "fuente": fila.get("fuente") or "desconocida",
+        "fecha_medicion": _iso(fila.get("fecha_medicion")),
+        "antiguedad_minutos": (
+            round(float(fila["antiguedad_minutos"]), 1)
+            if fila.get("antiguedad_minutos") is not None
+            else None
+        ),
+        "version_modelo": fila.get("version_modelo"),
+        "tipo_estimacion": _tipo_estimacion(fila.get("version_modelo")),
+        "fuera_ventana_estacional": bool(fila.get("fuera_ventana_estacional") or False),
+    }
+
+
+@app.get("/api/publico/zonas")
+def zonas_publicas():
+    """Último riesgo por zona para el mapa de acceso público (sin JWT)."""
+    with cursor_db() as cur:
+        cur.execute("""
+            SELECT DISTINCT ON (r.zona)
+                r.zona,
+                r.nivel_riesgo,
+                r.probabilidad,
+                r.fecha_evaluacion,
+                r.version_modelo,
+                r.fuera_ventana_estacional,
+                z.comuna,
+                z.codigo_comuna,
+                v.fuente,
+                v.fecha_medicion,
+                EXTRACT(EPOCH FROM (NOW() - v.fecha_medicion)) / 60.0 AS antiguedad_minutos
+            FROM resultado_riesgo r
+            LEFT JOIN comuna_zona z ON z.slug = r.zona
+            LEFT JOIN LATERAL (
+                SELECT fuente, fecha_medicion
+                FROM variable_ambiental va
+                WHERE va.id_zona = z.id_zona
+                ORDER BY va.fecha_medicion DESC, va.id_variable DESC
+                LIMIT 1
+            ) v ON TRUE
+            ORDER BY r.zona, r.fecha_evaluacion DESC
+        """)
+        filas = cur.fetchall()
+
+    return {
+        "total": len(filas),
+        "zonas": [_zona_publica(fila) for fila in filas],
+    }
+
+
+@app.get("/api/publico/distritos")
+def distritos_publicos():
+    """Nivel de riesgo por distrito para pintar el mapa público."""
+    return _data_service_get("/datos/distritos")
+
+
 @app.get("/api/riesgo/todas", dependencies=[Depends(require_rol("admin", "analista", "visualizador"))])
 def obtener_todas_las_zonas():
     """Devuelve el riesgo de todas las zonas (último resultado por zona)."""

@@ -1033,3 +1033,99 @@ def test_pool_usuarios_singleton(monkeypatch):
 
     assert p1 is p2
     assert len(creadas) == 1
+
+
+# --- Acceso público (mapa sin sesión) -------------------------------------
+
+
+def _respuesta_zonas_publicas():
+    return [
+        {
+            "zona": "quilpue",
+            "comuna": "Quilpué",
+            "codigo_comuna": "5801",
+            "nivel_riesgo": "ALTO",
+            "probabilidad": 0.21,
+            "fecha_evaluacion": None,
+            "fuente": "Open-Meteo",
+            "fecha_medicion": None,
+            "antiguedad_minutos": 12.5,
+            "version_modelo": "rf-comunal-clima-v1",
+            "fuera_ventana_estacional": False,
+        }
+    ]
+
+
+def test_zonas_publicas_sin_token(monkeypatch):
+    import main
+
+    filas = _respuesta_zonas_publicas()
+
+    class _Cursor:
+        def execute(self, sql, params=None):
+            pass
+
+        def fetchall(self):
+            return filas
+
+    class _Ctx:
+        def __enter__(self):
+            return _Cursor()
+
+        def __exit__(self, *args):
+            return False
+
+    monkeypatch.setattr(main, "cursor_db", lambda commit=False: _Ctx())
+
+    respuesta = client.get("/api/publico/zonas")
+
+    assert respuesta.status_code == 200
+    data = respuesta.json()
+    assert data["total"] == 1
+    zona = data["zonas"][0]
+    assert zona["zona"] == "quilpue"
+    assert zona["nivel_riesgo"] == "ALTO"
+    assert zona["tipo_estimacion"] == "riesgo_meteorologico_comunal"
+
+
+def test_zonas_publicas_no_expone_datos_sensibles(monkeypatch):
+    import main
+
+    filas = _respuesta_zonas_publicas()
+
+    class _Cursor:
+        def execute(self, sql, params=None):
+            pass
+
+        def fetchall(self):
+            return filas
+
+    class _Ctx:
+        def __enter__(self):
+            return _Cursor()
+
+        def __exit__(self, *args):
+            return False
+
+    monkeypatch.setattr(main, "cursor_db", lambda commit=False: _Ctx())
+
+    zona = client.get("/api/publico/zonas").json()["zonas"][0]
+
+    for campo in ("usuario", "origen", "factores_predominantes", "variables"):
+        assert campo not in zona
+    assert client.get("/api/riesgo/todas").status_code == 401
+
+
+def test_distritos_publicos_sin_token(monkeypatch):
+    import main
+
+    monkeypatch.setattr(
+        main,
+        "_data_service_get",
+        lambda ruta: {"distritos": {"580101": "ALTO"}},
+    )
+
+    respuesta = client.get("/api/publico/distritos")
+
+    assert respuesta.status_code == 200
+    assert respuesta.json()["distritos"]["580101"] == "ALTO"
