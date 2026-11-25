@@ -1129,3 +1129,140 @@ def test_distritos_publicos_sin_token(monkeypatch):
 
     assert respuesta.status_code == 200
     assert respuesta.json()["distritos"]["580101"] == "ALTO"
+
+
+# --- Auto-registro público (rol visualizador) -----------------------------
+
+
+def _ctx_registro(fila, capturado=None):
+    class _Cursor:
+        def execute(self, sql, params=None):
+            if capturado is not None:
+                capturado["sql"] = sql
+                capturado["params"] = params
+
+        def fetchone(self):
+            return fila
+
+    class _Ctx:
+        def __enter__(self):
+            return _Cursor()
+
+        def __exit__(self, *args):
+            return False
+
+    return _Ctx()
+
+
+def test_registro_publico_crea_visualizador(monkeypatch):
+    import main
+
+    capturado = {}
+    fila = {
+        "id_usuario": 9,
+        "username": "nuevo.usuario",
+        "nombre_completo": "Nuevo Usuario",
+        "rol": "visualizador",
+        "activo": True,
+        "created_at": None,
+    }
+    monkeypatch.setattr(
+        main, "cursor_db", lambda commit=False: _ctx_registro(fila, capturado)
+    )
+
+    respuesta = client.post(
+        "/api/publico/registro",
+        json={
+            "username": "Nuevo.Usuario",
+            "password": "clave-segura-123",
+            "nombre_completo": "Nuevo Usuario",
+        },
+    )
+
+    assert respuesta.status_code == 201
+    data = respuesta.json()
+    assert data["rol"] == "visualizador"
+    assert data["activo"] is True
+    assert capturado["params"][0] == "nuevo.usuario"
+    assert capturado["params"][1] == "Nuevo Usuario"
+    assert "visualizador" in capturado["sql"]
+
+
+def test_registro_publico_ignora_rol_enviado(monkeypatch):
+    import main
+
+    capturado = {}
+    fila = {
+        "id_usuario": 10,
+        "username": "otro.usuario",
+        "nombre_completo": "otro.usuario",
+        "rol": "visualizador",
+        "activo": True,
+        "created_at": None,
+    }
+    monkeypatch.setattr(
+        main, "cursor_db", lambda commit=False: _ctx_registro(fila, capturado)
+    )
+
+    respuesta = client.post(
+        "/api/publico/registro",
+        json={
+            "username": "otro.usuario",
+            "password": "clave-segura-123",
+            "rol": "admin",
+            "activo": True,
+        },
+    )
+
+    assert respuesta.status_code == 201
+    assert respuesta.json()["rol"] == "visualizador"
+    assert "admin" not in capturado["params"]
+
+
+def test_registro_publico_duplicado(monkeypatch):
+    import main
+    import psycopg2.errors
+
+    class _Cursor:
+        def execute(self, sql, params=None):
+            raise psycopg2.errors.UniqueViolation("duplicado")
+
+        def fetchone(self):
+            return None
+
+    class _Ctx:
+        def __enter__(self):
+            return _Cursor()
+
+        def __exit__(self, *args):
+            return False
+
+    monkeypatch.setattr(main, "cursor_db", lambda commit=False: _Ctx())
+
+    respuesta = client.post(
+        "/api/publico/registro",
+        json={"username": "repetido", "password": "clave-segura-123"},
+    )
+
+    assert respuesta.status_code == 409
+    assert "ya está registrado" in respuesta.json()["detail"]
+
+
+def test_registro_publico_password_corta():
+    respuesta = client.post(
+        "/api/publico/registro",
+        json={"username": "usuario.valido", "password": "corta"},
+    )
+
+    assert respuesta.status_code == 422
+    assert "contraseña" in respuesta.json()["detail"]
+
+
+def test_registro_publico_username_invalido():
+    respuesta = client.post(
+        "/api/publico/registro",
+        json={"username": "usuario con espacios", "password": "clave-segura-123"},
+    )
+
+    assert respuesta.status_code == 422
+    assert "usuario inválido" in respuesta.json()["detail"]

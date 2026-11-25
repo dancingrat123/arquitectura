@@ -65,6 +65,14 @@ class UsuarioPatchRequest(BaseModel):
     nombre_completo: str | None = None
 
 
+class RegistroPublicoRequest(BaseModel):
+    """Auto-registro: el rol y el estado los fija el servidor."""
+
+    username: str
+    password: str
+    nombre_completo: str | None = None
+
+
 class InfraestructuraRequest(BaseModel):
     tipo: str
     nombre: str | None = None
@@ -1037,6 +1045,56 @@ def zonas_publicas():
 def distritos_publicos():
     """Nivel de riesgo por distrito para pintar el mapa público."""
     return _data_service_get("/datos/distritos")
+
+
+# Usuario público: minúsculas, números, punto, guion y guion bajo.
+PATRON_USUARIO_PUBLICO = re.compile(r"^[a-z0-9._-]{3,50}$")
+
+
+@app.post("/api/publico/registro", status_code=201)
+def registro_publico(peticion: RegistroPublicoRequest):
+    """Crea una cuenta de solo lectura (`visualizador`) sin intervención del admin.
+
+    El rol y el estado se fijan aquí: cualquier campo de privilegios enviado por
+    el cliente se ignora. La elevación de rol sigue siendo exclusiva del admin.
+    """
+    username = (peticion.username or "").strip().lower()
+    nombre = (peticion.nombre_completo or "").strip() or username
+    password = peticion.password or ""
+
+    if not PATRON_USUARIO_PUBLICO.fullmatch(username):
+        raise HTTPException(
+            status_code=422,
+            detail=(
+                "usuario inválido: usa entre 3 y 50 caracteres "
+                "(letras, números, punto, guion o guion bajo)"
+            ),
+        )
+    if len(password) < 8 or len(password) > 128:
+        raise HTTPException(
+            status_code=422,
+            detail="la contraseña debe tener entre 8 y 128 caracteres",
+        )
+    if len(nombre) > 100:
+        raise HTTPException(status_code=422, detail="el nombre es demasiado largo")
+
+    with cursor_db(commit=True) as cur:
+        try:
+            cur.execute(
+                """
+                INSERT INTO usuario (username, nombre_completo, rol, hash_password, activo)
+                VALUES (%s, %s, 'visualizador', %s, TRUE)
+                RETURNING id_usuario, username, nombre_completo, rol, activo, created_at
+                """,
+                (username, nombre, auth_mod.hash_password(password)),
+            )
+        except psycopg2.errors.UniqueViolation as error:
+            raise HTTPException(
+                status_code=409, detail="El usuario ya está registrado"
+            ) from error
+        fila = cur.fetchone()
+
+    return _serializar_usuario(dict(fila))
 
 
 @app.get("/api/riesgo/todas", dependencies=[Depends(require_rol("admin", "analista", "visualizador"))])
