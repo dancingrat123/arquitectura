@@ -150,6 +150,20 @@ Controles implementados en el gateway Nginx:
 - AMQP, cAdvisor y node-exporter solo en la red interna de Docker (sin puerto en el host).
 - Gestión de secretos mediante variables de entorno en Docker Compose.
 
+El certificado TLS de desarrollo es **autofirmado** y se genera en el primer
+arranque del gateway dentro del volumen `gateway_tls`. `nginx.key` y
+`nginx.crt` **no se versionan**; la clave que estaba en el repositorio fue
+rotada. Para regenerar el certificado:
+
+```bash
+docker compose exec gateway rm -f /etc/nginx/tls/nginx.crt /etc/nginx/tls/nginx.key
+docker compose restart gateway
+```
+
+El navegador mostrará una advertencia de certificado no confiable (esperable en
+desarrollo). En producción se debe usar un certificado de una CA real (por
+ejemplo, Let's Encrypt) y habilitar HSTS.
+
 Credenciales de la API: `admin / sirif2026`.
 
 ## Estructura del repositorio

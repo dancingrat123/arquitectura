@@ -24,6 +24,9 @@ Thumbs.db
 
 # Entorno
 .env
+# Certificados TLS: se generan en el volumen Docker `gateway_tls`
+gateway/nginx.key
+gateway/nginx.crt
 # Artefactos de herramientas de navegador
 .playwright-mcp/
 # Modelo grande (296MB): se genera con ml-pipeline/train_comunal.py
