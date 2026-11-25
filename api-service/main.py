@@ -12,6 +12,7 @@ import pika
 import csv
 import io
 import json
+import math
 import os
 import re
 import threading
@@ -2396,6 +2397,69 @@ def _indice_zonas_por_comuna(filas: list[dict[str, Any]]) -> dict[str, dict[str,
     return indice
 
 
+# Mismo encuadre regional que usa el frontend (frontend/app.js → fitMapToData).
+LIMITES_REGION = {
+    "lat_min": -35.0,
+    "lat_max": -31.5,
+    "lon_min": -73.5,
+    "lon_max": -69.5,
+}
+
+RADIO_TIERRA = 6378137.0
+
+
+def _punto_wgs84(punto: Any) -> tuple[float, float] | None:
+    """Devuelve (lon, lat) aceptando coordenadas en grados o en Web Mercator."""
+    if not isinstance(punto, (list, tuple)) or len(punto) < 2:
+        return None
+    try:
+        x = float(punto[0])
+        y = float(punto[1])
+    except (TypeError, ValueError):
+        return None
+    if abs(x) <= 180.0 and abs(y) <= 90.0:
+        return x, y
+    lon = math.degrees(x / RADIO_TIERRA)
+    lat = math.degrees(2.0 * math.atan(math.exp(y / RADIO_TIERRA)) - math.pi / 2.0)
+    return lon, lat
+
+
+def _dentro_region(lon: float, lat: float) -> bool:
+    return (
+        LIMITES_REGION["lon_min"] < lon < LIMITES_REGION["lon_max"]
+        and LIMITES_REGION["lat_min"] < lat < LIMITES_REGION["lat_max"]
+    )
+
+
+def _anillos_regionales(feature: dict[str, Any]) -> list[list[tuple[float, float]]]:
+    """Anillos del feature que caen en el encuadre regional.
+
+    El GeoJSON incluye distritos con coordenadas erróneas muy alejadas de la
+    región (p. ej. 510124); si entraran al cálculo del bounding box, el mapa
+    quedaría reducido a unos pocos píxeles.
+    """
+    anillos: list[list[tuple[float, float]]] = []
+    for poligono in _poligonos(feature.get("geometry") or {}):
+        for anillo in poligono:
+            vertices: list[tuple[float, float]] = []
+            lons: list[float] = []
+            lats: list[float] = []
+            for punto in anillo:
+                coordenada = _punto_wgs84(punto)
+                if not coordenada:
+                    continue
+                lons.append(coordenada[0])
+                lats.append(coordenada[1])
+                vertices.append((float(punto[0]), float(punto[1])))
+            if len(vertices) < 3 or not lons:
+                continue
+            centro_lon = (min(lons) + max(lons)) / 2
+            centro_lat = (min(lats) + max(lats)) / 2
+            if _dentro_region(centro_lon, centro_lat):
+                anillos.append(vertices)
+    return anillos
+
+
 def _dibujar_mapa_local(
     pdf: canvas.Canvas,
     filas: list[dict[str, Any]],
@@ -2409,14 +2473,15 @@ def _dibujar_mapa_local(
     pdf.setLineWidth(0.8)
     pdf.rect(x, y, ancho, alto)
 
-    features = (_cargar_geojson().get("features") or [])
+    features: list[tuple[dict[str, Any], list[list[tuple[float, float]]]]] = []
     puntos: list[tuple[float, float]] = []
-    for feature in features:
-        for poligono in _poligonos(feature.get("geometry") or {}):
-            for anillo in poligono:
-                for punto in anillo:
-                    if isinstance(punto, (list, tuple)) and len(punto) >= 2:
-                        puntos.append((float(punto[0]), float(punto[1])))
+    for feature in _cargar_geojson().get("features") or []:
+        anillos = _anillos_regionales(feature)
+        if not anillos:
+            continue
+        features.append((feature, anillos))
+        for anillo in anillos:
+            puntos.extend(anillo)
 
     if not puntos:
         pdf.setFont("Helvetica", 8)
@@ -2439,25 +2504,40 @@ def _dibujar_mapa_local(
         return (punto[0] * escala + offset_x, punto[1] * escala + offset_y)
 
     indice = _indice_zonas_por_comuna(filas)
-    for feature in features:
+    for feature, anillos in features:
         propiedades = feature.get("properties") or {}
         comuna = propiedades.get("NOM_COMUNA") or propiedades.get("COMUNA")
         fila = indice.get(_normalizar_texto(comuna)) or {}
         nivel = fila.get("nivel_riesgo") or "SIN"
-        for poligono in _poligonos(feature.get("geometry") or {}):
-            for anillo in poligono:
-                vertices = [proyectar(p) for p in anillo if isinstance(p, (list, tuple)) and len(p) >= 2]
-                if len(vertices) < 3:
-                    continue
-                trazo = pdf.beginPath()
-                trazo.moveTo(*vertices[0])
-                for vertice in vertices[1:]:
-                    trazo.lineTo(*vertice)
-                trazo.close()
-                pdf.setFillColor(colors.HexColor(COLORES_MAPA.get(nivel, COLORES_MAPA["SIN"])))
-                pdf.setStrokeColor(colors.white)
-                pdf.setLineWidth(0.5)
-                pdf.drawPath(trazo, fill=1, stroke=1)
+        for anillo in anillos:
+            vertices = [proyectar(p) for p in anillo]
+            trazo = pdf.beginPath()
+            trazo.moveTo(*vertices[0])
+            for vertice in vertices[1:]:
+                trazo.lineTo(*vertice)
+            trazo.close()
+            pdf.setFillColor(colors.HexColor(COLORES_MAPA.get(nivel, COLORES_MAPA["SIN"])))
+            pdf.setStrokeColor(colors.white)
+            pdf.setLineWidth(0.5)
+            pdf.drawPath(trazo, fill=1, stroke=1)
+
+    nivel_ficha = next((f.get("nivel_riesgo") for f in filas if f.get("nivel_riesgo")), None)
+    leyenda: list[tuple[str, str]] = []
+    if nivel_ficha:
+        leyenda.append(
+            (COLORES_MAPA.get(nivel_ficha, COLORES_MAPA["SIN"]), f"{nivel_ficha} · comuna del informe")
+        )
+    leyenda.append((COLORES_MAPA["SIN"], "Resto de la región"))
+
+    pdf.setFont("Helvetica", 6.5)
+    cursor_y = y + alto - 10
+    for color_leyenda, texto_leyenda in leyenda:
+        ancho_texto = pdf.stringWidth(texto_leyenda, "Helvetica", 6.5)
+        pdf.setFillColor(colors.HexColor(color_leyenda))
+        pdf.rect(x + ancho - 8 - ancho_texto - 10, cursor_y - 1.5, 5, 5, fill=1, stroke=0)
+        pdf.setFillColor(colors.HexColor("#475569"))
+        pdf.drawString(x + ancho - 8 - ancho_texto, cursor_y, texto_leyenda)
+        cursor_y -= 9
 
     pdf.setFont("Helvetica", 6.5)
     pdf.setFillColor(colors.HexColor("#475569"))
