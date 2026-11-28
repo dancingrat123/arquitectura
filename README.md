@@ -516,6 +516,7 @@ Los archivos se pueden abrir a tamaño completo desde cada enlace.
 | Logs del stack | `docs/evidencias/logs-stack-2026-11-28.txt` | Arranque, bootstrap de datos, heartbeat y consumidores con timestamps |
 | Script de captura | `docs/evidencias/capturar_evidencias.py` | Reproduce las capturas, la ficha PDF y las vistas de monitoreo |
 | Ejecución de pruebas | `docs/evidencias/pruebas-2026-11-28.txt` | 108 pruebas en 7 suites, 0 fallos |
+| CI/CD en verde | [CI `a9bf770`](https://github.com/dancingrat123/arquitectura/actions/runs/46170839635) · [Deploy `a9bf770`](https://github.com/dancingrat123/arquitectura/actions/runs/46170839700) | Build, 7 suites y despliegue a EC2 exitosos |
 | Ficha PDF real | `docs/evidencias/ficha-riesgo-quilpue.pdf` | Reporte generado por `GET /api/reportes/quilpue/pdf` con el mapa de distritos corregido |
 | Métricas del modelo regional | `ml-pipeline/model_metadata.json` | AUC, AP, Brier, features, umbrales y fecha de entrenamiento |
 | Métricas del modelo comunal | `ml-pipeline/model_metadata_comunal.json` | Validación temporal/espacial, prevalencia y curvas |
