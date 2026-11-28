@@ -1,2 +1,5 @@
 # Los scripts de entrada deben conservar finales de línea LF (contenedores Linux).
 *.sh text eol=lf
+# Evidencias binarias: no aplicar conversión de fin de línea.
+*.png binary
+*.pdf binary
