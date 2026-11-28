@@ -43,7 +43,7 @@ SIRIF clasifica el nivel de riesgo (**BAJO / MEDIO / ALTO**) por comuna y lo pro
 | **Documentación** | `docs/superpowers/specs/` (2 diseños), `docs/superpowers/plans/` (4 planes), `datos_externos/conaf/README.md` ([ver detalle](#documentación)) |
 | **Modelo o referencia** | `risk-service/modelo_riesgo.pkl` (regional), `risk-service/modelo_riesgo_comunal.pkl` (comunal, generado), `ml-pipeline/train_honesto.py`, `ml-pipeline/train_comunal.py` y metadatos JSON ([ver detalle](#modelo-y-referencia)) |
 | **CI/CD** | `.github/workflows/ci.yml` (pruebas + build) y `.github/workflows/deploy.yml` (despliegue a EC2) ([ver detalle](#cicd)) |
-| **Evidencias** | Capturas de la interfaz en `docs/evidencias/`, ficha PDF real, registro de pruebas y metadatos del modelo ([ver detalle](#evidencias)) |
+| **Evidencias** | Capturas de la interfaz y de observabilidad en `docs/evidencias/`, ficha PDF real, registro de pruebas y metadatos del modelo ([ver detalle](#evidencias)) |
 | **Enlaces** | Repositorio, servicios locales, fuentes de datos y documentación técnica ([ver detalle](#enlaces)) |
 
 ---
@@ -483,6 +483,9 @@ Capturadas contra el stack en ejecución (`https://localhost:9443`, tema oscuro,
 | Operación territorial | <a href="docs/evidencias/07-operacion.png"><img src="docs/evidencias/07-operacion.png" width="760" alt="Operación"></a> |
 | Centro de actividad | <a href="docs/evidencias/08-alertas.png"><img src="docs/evidencias/08-alertas.png" width="760" alt="Notificaciones"></a> |
 | Vista móvil (390×844) | <a href="docs/evidencias/09-movil-mapa.png"><img src="docs/evidencias/09-movil-mapa.png" width="300" alt="Móvil"></a> |
+| Grafana · dashboard SIRIF | <a href="docs/evidencias/10-grafana.png"><img src="docs/evidencias/10-grafana.png" width="760" alt="Grafana"></a> |
+| RabbitMQ · overview | <a href="docs/evidencias/11-rabbitmq-overview.png"><img src="docs/evidencias/11-rabbitmq-overview.png" width="760" alt="RabbitMQ overview"></a> |
+| RabbitMQ · colas | <a href="docs/evidencias/12-rabbitmq-colas.png"><img src="docs/evidencias/12-rabbitmq-colas.png" width="760" alt="RabbitMQ colas"></a> |
 
 Los archivos se pueden abrir a tamaño completo desde cada enlace.
 
@@ -491,7 +494,8 @@ Los archivos se pueden abrir a tamaño completo desde cada enlace.
 | Evidencia | Archivo | Qué demuestra |
 |---|---|---|
 | Capturas de interfaz | `docs/evidencias/01-…09-*.png` | UI real del stack en tema oscuro y vista móvil |
-| Script de captura | `docs/evidencias/capturar_evidencias.py` | Reproduce las capturas y la ficha PDF con Playwright |
+| Observabilidad | `docs/evidencias/10-grafana.png`, `11-rabbitmq-overview.png`, `12-rabbitmq-colas.png` | Métricas en Grafana y colas/consumidores en RabbitMQ |
+| Script de captura | `docs/evidencias/capturar_evidencias.py` | Reproduce las capturas, la ficha PDF y las vistas de monitoreo |
 | Ejecución de pruebas | `docs/evidencias/pruebas-2026-11-28.txt` | 108 pruebas en 7 suites, 0 fallos |
 | Ficha PDF real | `docs/evidencias/ficha-riesgo-quilpue.pdf` | Reporte generado por `GET /api/reportes/quilpue/pdf` con el mapa de distritos corregido |
 | Métricas del modelo regional | `ml-pipeline/model_metadata.json` | AUC, AP, Brier, features, umbrales y fecha de entrenamiento |
@@ -508,6 +512,8 @@ pip install playwright httpx
 python docs/evidencias/capturar_evidencias.py   # capturas + ficha PDF
 cd api-service && python -m pytest -q           # y análogamente en cada módulo
 ```
+
+El script toma las credenciales de monitoreo de `GRAFANA_USER`/`GRAFANA_PASSWORD` (default `admin`/`admin`) y `RABBITMQ_USER`/`RABBITMQ_PASS` (default `sirif`/`sirif2026`). Si Grafana o RabbitMQ no están disponibles, omite esas capturas con una advertencia.
 
 ---
 

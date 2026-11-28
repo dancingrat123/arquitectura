@@ -19,6 +19,12 @@ import httpx
 from playwright.sync_api import sync_playwright
 
 BASE = os.getenv("SIRIF_URL", "https://localhost:9443")
+GRAFANA_URL = os.getenv("GRAFANA_URL", "http://127.0.0.1:3000")
+GRAFANA_USUARIO = os.getenv("GRAFANA_USER", "admin")
+GRAFANA_CLAVE = os.getenv("GRAFANA_PASSWORD", "admin")
+RABBIT_URL = os.getenv("RABBIT_URL", "http://127.0.0.1:15672")
+RABBIT_USUARIO = os.getenv("RABBITMQ_USER", "sirif")
+RABBIT_CLAVE = os.getenv("RABBITMQ_PASS", "sirif2026")
 SALIDA = Path(__file__).resolve().parent
 USUARIO = os.getenv("SIRIF_USUARIO", "admin")
 CLAVE = os.getenv("SIRIF_CLAVE", "sirif2026")
@@ -30,6 +36,68 @@ def guardar(page, nombre: str) -> None:
     ruta = SALIDA / nombre
     page.screenshot(path=str(ruta))
     print(f"[ok] {ruta.name}")
+
+
+def generar_trafico(segundos: int = 30, rps: int = 15):
+    """Tráfico sintético en segundo plano para que Prometheus tenga datos."""
+    import threading
+    import time
+
+    def bucle() -> None:
+        fin = time.time() + segundos
+        with httpx.Client(verify=False, timeout=10) as cliente:
+            while time.time() < fin:
+                try:
+                    cliente.get(f"{BASE}/api/publico/zonas")
+                except Exception:  # noqa: BLE001
+                    pass
+                time.sleep(1 / rps)
+
+    hilo = threading.Thread(target=bucle, daemon=True)
+    hilo.start()
+    return hilo
+
+
+def capturar_grafana(navegador) -> None:
+    contexto = navegador.new_context(
+        viewport={"width": 1600, "height": 1000},
+        locale="es-CL",
+        reduced_motion="reduce",
+    )
+    page = contexto.new_page()
+    page.set_default_timeout(45000)
+    page.goto(f"{GRAFANA_URL}/login", wait_until="load")
+    page.fill('input[name="user"]', GRAFANA_USUARIO)
+    page.fill('input[name="password"]', GRAFANA_CLAVE)
+    page.click('button[type="submit"]')
+    page.wait_for_timeout(4000)
+    page.goto(
+        f"{GRAFANA_URL}/d/sirif/sirif-observabilidad?from=now-1h&to=now&refresh=5s",
+        wait_until="load",
+    )
+    page.wait_for_timeout(12000)
+    guardar(page, "10-grafana.png")
+    contexto.close()
+
+
+def capturar_rabbitmq(navegador) -> None:
+    contexto = navegador.new_context(
+        viewport={"width": 1600, "height": 1000},
+        locale="es-CL",
+        reduced_motion="reduce",
+    )
+    page = contexto.new_page()
+    page.set_default_timeout(45000)
+    page.goto(f"{RABBIT_URL}/", wait_until="load")
+    page.fill('input[name="username"]', RABBIT_USUARIO)
+    page.fill('input[name="password"]', RABBIT_CLAVE)
+    page.click('input[type="submit"]')
+    page.wait_for_timeout(5000)
+    guardar(page, "11-rabbitmq-overview.png")
+    page.goto(f"{RABBIT_URL}/#/queues", wait_until="load")
+    page.wait_for_timeout(3000)
+    guardar(page, "12-rabbitmq-colas.png")
+    contexto.close()
 
 
 def main() -> int:
@@ -133,6 +201,17 @@ def main() -> int:
         pagina_movil.wait_for_timeout(7000)
         guardar(pagina_movil, "09-movil-mapa.png")
         movil.close()
+
+        # Observabilidad: Grafana y RabbitMQ (requieren el stack de monitoreo).
+        generar_trafico(45)
+        try:
+            capturar_grafana(navegador)
+        except Exception as error:  # noqa: BLE001
+            print(f"[warn] Grafana no disponible: {error}", file=sys.stderr)
+        try:
+            capturar_rabbitmq(navegador)
+        except Exception as error:  # noqa: BLE001
+            print(f"[warn] RabbitMQ no disponible: {error}", file=sys.stderr)
 
         navegador.close()
 
