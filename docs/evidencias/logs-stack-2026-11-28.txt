@@ -1,0 +1,244 @@
+SIRIF - Evidencia de logs del stack en ejecucion
+Generado: 2026-11-28 14:29
+Comando base: docker compose logs --no-color --timestamps --tail=60 <servicio>
+======================================================================
+
+## docker compose ps
+arquitectura_api-service_1	Up About a minute (healthy)
+arquitectura_api-service_2	Up About a minute (healthy)
+sirif-cadvisor	Up About a minute (healthy)
+sirif-data-service	Up About a minute (healthy)
+sirif-db	Up About a minute (healthy)
+sirif-frontend	Up About a minute
+sirif-gateway	Up About a minute (healthy)
+sirif-grafana	Up About a minute
+sirif-monitoring-service	Up About a minute
+sirif-node-exporter	Up About a minute
+sirif-notification-service	Up About a minute
+sirif-prometheus	Up About a minute
+sirif-rabbitmq	Up About a minute (healthy)
+sirif-risk-service	Up About a minute (healthy)
+
+======================================================================
+## data-service
+
+sirif-data-service  | 2026-11-28T17:27:48.837700900Z INFO:     Started server process [1]
+sirif-data-service  | 2026-11-28T17:27:48.837814300Z INFO:     Waiting for application startup.
+sirif-data-service  | 2026-11-28T17:27:48.839148000Z INFO:     Application startup complete.
+sirif-data-service  | 2026-11-28T17:27:48.840343100Z INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+sirif-data-service  | 2026-11-28T17:27:49.361558000Z 2026-11-28 17:27:49,361 INFO data-service.db Esquema PostGIS verificado (72 sentencias)
+sirif-data-service  | 2026-11-28T17:27:49.432318600Z INFO:     172.18.0.8:35630 - "GET /metrics HTTP/1.1" 200 OK
+sirif-data-service  | 2026-11-28T17:27:50.318825500Z 2026-11-28 17:27:50,318 INFO data-service.ingestion [bootstrap] ide_chile ok (264 registros, 919 ms)
+sirif-data-service  | 2026-11-28T17:27:50.341080100Z 2026-11-28 17:27:50,340 INFO data-service.ingestion [bootstrap] zonas ok (3 registros, 22 ms)
+sirif-data-service  | 2026-11-28T17:27:50.448928200Z 2026-11-28 17:27:50,448 INFO data-service.ingestion [bootstrap] comunas_region ok (38 registros, 108 ms)
+sirif-data-service  | 2026-11-28T17:27:50.724023100Z 2026-11-28 17:27:50,723 INFO data-service.ingestion [bootstrap] conaf ok (0 registros, 274 ms)
+sirif-data-service  | 2026-11-28T17:27:50.765105600Z 2026-11-28 17:27:50,764 INFO data-service.ingestion [bootstrap] legado ok (0 registros, 41 ms)
+sirif-data-service  | 2026-11-28T17:27:51.130246600Z 2026-11-28 17:27:51,129 INFO data-service.ingestion [bootstrap] emas ok (0 registros, 365 ms)
+sirif-data-service  | 2026-11-28T17:27:51.192978000Z 2026-11-28 17:27:51,192 INFO data-service.ingestion [bootstrap] resultados ok (0 registros, 63 ms)
+sirif-data-service  | 2026-11-28T17:27:51.193208800Z 2026-11-28 17:27:51,192 INFO data-service Carga inicial completada: {'ide_chile': {'estado': 'ok', 'registros': 264}, 'zonas': {'estado': 'ok', 'registros': 3}, 'comunas_region': {'estado': 'ok', 'registros': 38}, 'conaf': {'estado': 'ok', 'registros': 0}, 'legado': {'estado': 'ok', 'registros': 0}, 'emas': {'estado': 'ok', 'registros': 0}, 'resultados': {'estado': 'ok', 'registros': 0}}
+sirif-data-service  | 2026-11-28T17:27:52.281592500Z INFO:     127.0.0.1:38002 - "GET / HTTP/1.1" 200 OK
+sirif-data-service  | 2026-11-28T17:27:55.518405600Z 2026-11-28 17:27:55,509 INFO httpx HTTP Request: GET https://api.open-meteo.com/v1/forecast?latitude=-33.048600%2C-33.024500%2C-33.047200%2C-33.379730%2C-32.427340%2C-32.882350%2C-33.533040%2C-33.326670%2C-32.771530%2C-32.933280%2C-33.413600%2C-33.453040%2C-32.918040%2C-27.140790%2C-33.690440%2C-32.838810%2C-32.464940%2C-33.039720%2C-32.833300%2C-32.846590%2C-32.790610%2C-32.668790%2C-32.996320%2C-32.802980%2C-32.520480%2C-32.254520%2C-32.727980%2C-32.622210%2C-32.886650%2C-32.789740%2C-32.911480%2C-33.579230%2C-32.803930%2C-32.744030%2C-32.749220%2C-33.718440%2C-33.056050%2C-32.555650&longitude=-71.442500%2C-71.551800%2C-71.612700%2C-71.642140%2C-71.058690%2C-70.645870%2C-71.541190%2C-71.409180%2C-70.998720%2C-71.527200%2C-71.655280%2C-71.637960%2C-71.074630%2C-109.407720%2C-79.457920%2C-71.235530%2C-71.226790%2C-71.265540%2C-70.953120%2C-70.593470%2C-71.218300%2C-71.142790%2C-71.122240%2C-70.810710%2C-71.408400%2C-70.952930%2C-71.477900%2C-70.678240%2C-71.257830%2C-71.515740%2C-70.697350%2C-71.565410%2C-70.597720%2C-70.713100%2C-70.657760%2C-71.599600%2C-71.391520%2C-71.314800&daily=temperature_2m_mean%2Ctemperature_2m_max%2Crelative_humidity_2m_mean%2Cwind_speed_10m_max%2Cprecipitation_sum&past_days=31&forecast_days=1&timezone=UTC&models=ecmwf_ifs025 "HTTP/1.1 200 OK"
+sirif-data-service  | 2026-11-28T17:27:55.684426100Z 2026-11-28 17:27:55,684 INFO data-service.ingestion [sync] 38 zonas actualizadas en 681 ms
+sirif-data-service  | 2026-11-28T17:27:55.686712500Z INFO:     172.18.0.14:51914 - "POST /datos/sincronizar HTTP/1.1" 200 OK
+sirif-data-service  | 2026-11-28T17:27:55.753608200Z INFO:     172.18.0.14:51924 - "POST /datos/vegetacion HTTP/1.1" 200 OK
+sirif-data-service  | 2026-11-28T17:28:04.348894144Z INFO:     172.18.0.8:38504 - "GET /metrics HTTP/1.1" 200 OK
+sirif-data-service  | 2026-11-28T17:28:05.823998028Z INFO:     172.18.0.14:48948 - "GET / HTTP/1.1" 200 OK
+sirif-data-service  | 2026-11-28T17:28:07.374884421Z INFO:     127.0.0.1:37798 - "GET / HTTP/1.1" 200 OK
+sirif-data-service  | 2026-11-28T17:28:19.348937387Z INFO:     172.18.0.8:32970 - "GET /metrics HTTP/1.1" 200 OK
+sirif-data-service  | 2026-11-28T17:28:22.459948738Z INFO:     127.0.0.1:40394 - "GET / HTTP/1.1" 200 OK
+sirif-data-service  | 2026-11-28T17:28:34.347785753Z INFO:     172.18.0.8:38618 - "GET /metrics HTTP/1.1" 200 OK
+sirif-data-service  | 2026-11-28T17:28:37.545621838Z INFO:     127.0.0.1:48848 - "GET / HTTP/1.1" 200 OK
+sirif-data-service  | 2026-11-28T17:28:49.346243361Z INFO:     172.18.0.8:59652 - "GET /metrics HTTP/1.1" 200 OK
+sirif-data-service  | 2026-11-28T17:28:52.630905618Z INFO:     127.0.0.1:55842 - "GET / HTTP/1.1" 200 OK
+sirif-data-service  | 2026-11-28T17:29:04.345829359Z INFO:     172.18.0.8:56270 - "GET /metrics HTTP/1.1" 200 OK
+sirif-data-service  | 2026-11-28T17:29:07.725153254Z INFO:     127.0.0.1:36742 - "GET / HTTP/1.1" 200 OK
+
+======================================================================
+## monitoring-service
+
+sirif-monitoring-service  | 2026-11-28T17:27:54.964856500Z [2026-11-28T17:27:54.964514] Monitoring Service iniciado
+sirif-monitoring-service  | 2026-11-28T17:27:54.964913800Z Data service: http://data-service:8000
+sirif-monitoring-service  | 2026-11-28T17:27:54.964918700Z Intervalo: 3600 segundos
+sirif-monitoring-service  | 2026-11-28T17:27:54.964920800Z 
+sirif-monitoring-service  | 2026-11-28T17:27:54.983929600Z [2026-11-28T17:27:54.983626] Ciclo de monitoreo...
+sirif-monitoring-service  | 2026-11-28T17:27:55.754457500Z [Monitoring] NDVI ingestado: 3 capas
+sirif-monitoring-service  | 2026-11-28T17:27:55.756503600Z [Monitoring] Intento 1/10: 
+sirif-monitoring-service  | 2026-11-28T17:28:00.758909344Z [Monitoring] Intento 2/10: 
+sirif-monitoring-service  | 2026-11-28T17:28:05.763884714Z [Monitoring] Conectado a RabbitMQ
+sirif-monitoring-service  | 2026-11-28T17:28:05.765284038Z     Evento publicado: monitoreo.zona (quilpue)
+sirif-monitoring-service  | 2026-11-28T17:28:05.766561559Z     Evento publicado: monitoreo.zona (vina_del_mar)
+sirif-monitoring-service  | 2026-11-28T17:28:05.767618477Z     Evento publicado: monitoreo.zona (valparaiso)
+sirif-monitoring-service  | 2026-11-28T17:28:05.768626794Z     Evento publicado: monitoreo.zona (algarrobo)
+sirif-monitoring-service  | 2026-11-28T17:28:05.769687812Z     Evento publicado: monitoreo.zona (cabildo)
+sirif-monitoring-service  | 2026-11-28T17:28:05.770750730Z     Evento publicado: monitoreo.zona (calle_larga)
+sirif-monitoring-service  | 2026-11-28T17:28:05.771955050Z     Evento publicado: monitoreo.zona (cartagena)
+sirif-monitoring-service  | 2026-11-28T17:28:05.774299590Z     Evento publicado: monitoreo.zona (casablanca)
+sirif-monitoring-service  | 2026-11-28T17:28:05.775335507Z     Evento publicado: monitoreo.zona (catemu)
+sirif-monitoring-service  | 2026-11-28T17:28:05.776293623Z     Evento publicado: monitoreo.zona (concon)
+sirif-monitoring-service  | 2026-11-28T17:28:05.778184055Z     Evento publicado: monitoreo.zona (el_quisco)
+sirif-monitoring-service  | 2026-11-28T17:28:05.779694981Z     Evento publicado: monitoreo.zona (el_tabo)
+sirif-monitoring-service  | 2026-11-28T17:28:05.780765099Z     Evento publicado: monitoreo.zona (hijuelas)
+sirif-monitoring-service  | 2026-11-28T17:28:05.781894618Z     Evento publicado: monitoreo.zona (isla_de_pascua)
+sirif-monitoring-service  | 2026-11-28T17:28:05.782997136Z     Evento publicado: monitoreo.zona (juan_fernandez)
+sirif-monitoring-service  | 2026-11-28T17:28:05.783969453Z     Evento publicado: monitoreo.zona (la_cruz)
+sirif-monitoring-service  | 2026-11-28T17:28:05.784878568Z     Evento publicado: monitoreo.zona (la_ligua)
+sirif-monitoring-service  | 2026-11-28T17:28:05.786037088Z     Evento publicado: monitoreo.zona (limache)
+sirif-monitoring-service  | 2026-11-28T17:28:05.787005104Z     Evento publicado: monitoreo.zona (llaillay)
+sirif-monitoring-service  | 2026-11-28T17:28:05.788012621Z     Evento publicado: monitoreo.zona (los_andes)
+sirif-monitoring-service  | 2026-11-28T17:28:05.788851935Z     Evento publicado: monitoreo.zona (la_calera)
+sirif-monitoring-service  | 2026-11-28T17:28:05.789726050Z     Evento publicado: monitoreo.zona (nogales)
+sirif-monitoring-service  | 2026-11-28T17:28:05.791003172Z     Evento publicado: monitoreo.zona (olmue)
+sirif-monitoring-service  | 2026-11-28T17:28:05.791939987Z     Evento publicado: monitoreo.zona (panquehue)
+sirif-monitoring-service  | 2026-11-28T17:28:05.793054006Z     Evento publicado: monitoreo.zona (papudo)
+sirif-monitoring-service  | 2026-11-28T17:28:05.793951021Z     Evento publicado: monitoreo.zona (petorca)
+sirif-monitoring-service  | 2026-11-28T17:28:05.794963638Z     Evento publicado: monitoreo.zona (puchuncavi)
+sirif-monitoring-service  | 2026-11-28T17:28:05.795994756Z     Evento publicado: monitoreo.zona (putaendo)
+sirif-monitoring-service  | 2026-11-28T17:28:05.796863770Z     Evento publicado: monitoreo.zona (quillota)
+sirif-monitoring-service  | 2026-11-28T17:28:05.797828087Z     Evento publicado: monitoreo.zona (quintero)
+sirif-monitoring-service  | 2026-11-28T17:28:05.799022607Z     Evento publicado: monitoreo.zona (rinconada)
+sirif-monitoring-service  | 2026-11-28T17:28:05.799992423Z     Evento publicado: monitoreo.zona (san_antonio)
+sirif-monitoring-service  | 2026-11-28T17:28:05.801075642Z     Evento publicado: monitoreo.zona (san_esteban)
+sirif-monitoring-service  | 2026-11-28T17:28:05.802115259Z     Evento publicado: monitoreo.zona (san_felipe)
+sirif-monitoring-service  | 2026-11-28T17:28:05.803225678Z     Evento publicado: monitoreo.zona (santa_maria)
+sirif-monitoring-service  | 2026-11-28T17:28:05.804105793Z     Evento publicado: monitoreo.zona (santo_domingo)
+sirif-monitoring-service  | 2026-11-28T17:28:05.805076309Z     Evento publicado: monitoreo.zona (villa_alemana)
+sirif-monitoring-service  | 2026-11-28T17:28:05.806068226Z     Evento publicado: monitoreo.zona (zapallar)
+sirif-monitoring-service  | 2026-11-28T17:28:05.850166970Z [Monitoring] Heartbeat: api-service=ok, data-service=ok, risk-service=ok, open-meteo=ok, postgres=ok, rabbitmq=ok
+sirif-monitoring-service  | 2026-11-28T17:28:05.850180270Z Esperando 3600 segundos...
+sirif-monitoring-service  | 2026-11-28T17:28:05.850182070Z
+
+======================================================================
+## risk-service
+
+sirif-risk-service  | 2026-11-28T17:27:45.216262600Z INFO:     Started server process [1]
+sirif-risk-service  | 2026-11-28T17:27:45.216290400Z INFO:     Waiting for application startup.
+sirif-risk-service  | 2026-11-28T17:27:45.282225800Z [IA] sha256 verificado: d7e6466fc35b…
+sirif-risk-service  | 2026-11-28T17:27:50.436878900Z [IA] Modelo cargado exitosamente.
+sirif-risk-service  | 2026-11-28T17:27:51.694240100Z [IA] modelo comunal sha256 verificado: aeabb16c450d…
+sirif-risk-service  | 2026-11-28T17:27:54.139356500Z [IA] Modelo comunal cargado (36 comunas).
+sirif-risk-service  | 2026-11-28T17:27:54.139568700Z INFO:     Application startup complete.
+sirif-risk-service  | 2026-11-28T17:27:54.139976200Z INFO:     Uvicorn running on http://0.0.0.0:8001 (Press CTRL+C to quit)
+sirif-risk-service  | 2026-11-28T17:27:57.351088347Z INFO:     127.0.0.1:41400 - "GET / HTTP/1.1" 200 OK
+sirif-risk-service  | 2026-11-28T17:28:00.533221744Z INFO:     172.18.0.8:59410 - "GET /metrics HTTP/1.1" 200 OK
+sirif-risk-service  | 2026-11-28T17:28:05.833463188Z INFO:     172.18.0.14:37284 - "GET / HTTP/1.1" 200 OK
+sirif-risk-service  | 2026-11-28T17:28:12.484778755Z INFO:     127.0.0.1:36924 - "GET / HTTP/1.1" 200 OK
+sirif-risk-service  | 2026-11-28T17:28:15.531662935Z INFO:     172.18.0.8:49082 - "GET /metrics HTTP/1.1" 200 OK
+sirif-risk-service  | 2026-11-28T17:28:27.573153568Z INFO:     127.0.0.1:33648 - "GET / HTTP/1.1" 200 OK
+sirif-risk-service  | 2026-11-28T17:28:30.531489696Z INFO:     172.18.0.8:51082 - "GET /metrics HTTP/1.1" 200 OK
+sirif-risk-service  | 2026-11-28T17:28:42.658119554Z INFO:     127.0.0.1:58812 - "GET / HTTP/1.1" 200 OK
+sirif-risk-service  | 2026-11-28T17:28:45.529253805Z INFO:     172.18.0.8:46574 - "GET /metrics HTTP/1.1" 200 OK
+sirif-risk-service  | 2026-11-28T17:28:57.747943352Z INFO:     127.0.0.1:49192 - "GET / HTTP/1.1" 200 OK
+sirif-risk-service  | 2026-11-28T17:29:00.530137996Z INFO:     172.18.0.8:48798 - "GET /metrics HTTP/1.1" 200 OK
+sirif-risk-service  | 2026-11-28T17:29:12.834231098Z INFO:     127.0.0.1:34652 - "GET / HTTP/1.1" 200 OK
+sirif-risk-service  | 2026-11-28T17:29:15.529280179Z INFO:     172.18.0.8:43276 - "GET /metrics HTTP/1.1" 200 OK
+
+======================================================================
+## notification-service
+
+sirif-notification-service  | 2026-11-28T17:27:53.708832100Z [Notification Service] Iniciando...
+sirif-notification-service  | 2026-11-28T17:27:53.725514200Z [Notification] Conectado a PostgreSQL
+sirif-notification-service  | 2026-11-28T17:27:53.739910500Z [Notification] Intento 1/10: 
+sirif-notification-service  | 2026-11-28T17:27:58.742228458Z [Notification] Intento 2/10: 
+sirif-notification-service  | 2026-11-28T17:28:03.781050644Z [Notification Service] Esperando eventos...
+
+======================================================================
+## api-service
+
+arquitectura_api-service_1  | 2026-11-28T17:27:56.317308800Z INFO:     Started server process [1]
+arquitectura_api-service_1  | 2026-11-28T17:27:56.317339700Z INFO:     Waiting for application startup.
+arquitectura_api-service_1  | 2026-11-28T17:27:56.318198400Z [API] Iniciando consumidor de monitoreo...
+arquitectura_api-service_1  | 2026-11-28T17:27:56.318330500Z INFO:     Application startup complete.
+arquitectura_api-service_2  | 2026-11-28T17:27:56.300893300Z INFO:     Started server process [1]
+arquitectura_api-service_2  | 2026-11-28T17:27:56.300926600Z INFO:     Waiting for application startup.
+arquitectura_api-service_2  | 2026-11-28T17:27:56.302618100Z [API] Iniciando consumidor de monitoreo...
+arquitectura_api-service_1  | 2026-11-28T17:27:56.320477900Z INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+arquitectura_api-service_1  | 2026-11-28T17:27:56.322585900Z [API] Intento 1/10: 
+arquitectura_api-service_1  | 2026-11-28T17:27:59.380562344Z INFO:     127.0.0.1:50494 - "GET /health HTTP/1.1" 200 OK
+arquitectura_api-service_1  | 2026-11-28T17:28:01.324953044Z [API] Intento 2/10: 
+arquitectura_api-service_1  | 2026-11-28T17:28:05.776329024Z INFO:     172.18.0.8:34558 - "GET /metrics HTTP/1.1" 200 OK
+arquitectura_api-service_1  | 2026-11-28T17:28:14.574789002Z INFO:     127.0.0.1:40388 - "GET /health HTTP/1.1" 200 OK
+arquitectura_api-service_1  | 2026-11-28T17:28:20.772990568Z INFO:     172.18.0.8:59696 - "GET /metrics HTTP/1.1" 200 OK
+arquitectura_api-service_2  | 2026-11-28T17:27:56.302800700Z INFO:     Application startup complete.
+arquitectura_api-service_1  | 2026-11-28T17:28:29.691071316Z INFO:     127.0.0.1:52492 - "GET /health HTTP/1.1" 200 OK
+arquitectura_api-service_1  | 2026-11-28T17:28:35.773499000Z INFO:     172.18.0.8:33070 - "GET /metrics HTTP/1.1" 200 OK
+arquitectura_api-service_1  | 2026-11-28T17:28:44.795190434Z INFO:     127.0.0.1:58950 - "GET /health HTTP/1.1" 200 OK
+arquitectura_api-service_1  | 2026-11-28T17:28:50.772375069Z INFO:     172.18.0.8:49196 - "GET /metrics HTTP/1.1" 200 OK
+arquitectura_api-service_2  | 2026-11-28T17:27:56.341286400Z INFO:     Uvicorn running on http://0.0.0.0:8000 (Press CTRL+C to quit)
+arquitectura_api-service_2  | 2026-11-28T17:27:56.342997900Z [API] Intento 1/10: 
+arquitectura_api-service_2  | 2026-11-28T17:27:58.886796544Z INFO:     127.0.0.1:50482 - "GET /health HTTP/1.1" 200 OK
+arquitectura_api-service_2  | 2026-11-28T17:28:01.345798844Z [API] Intento 2/10: 
+arquitectura_api-service_2  | 2026-11-28T17:28:05.815187980Z INFO:     172.18.0.14:43716 - "GET /health HTTP/1.1" 200 OK
+arquitectura_api-service_2  | 2026-11-28T17:28:14.080640553Z INFO:     127.0.0.1:40380 - "GET /health HTTP/1.1" 200 OK
+arquitectura_api-service_2  | 2026-11-28T17:28:29.261618242Z INFO:     127.0.0.1:52484 - "GET /health HTTP/1.1" 200 OK
+arquitectura_api-service_2  | 2026-11-28T17:28:44.361529012Z INFO:     127.0.0.1:58934 - "GET /health HTTP/1.1" 200 OK
+arquitectura_api-service_2  | 2026-11-28T17:28:59.457433225Z INFO:     127.0.0.1:55852 - "GET /health HTTP/1.1" 200 OK
+arquitectura_api-service_2  | 2026-11-28T17:29:07.136334435Z INFO:     172.18.0.15:58342 - "GET /api/publico/zonas HTTP/1.1" 200 OK
+arquitectura_api-service_2  | 2026-11-28T17:29:14.558756652Z INFO:     127.0.0.1:44238 - "GET /health HTTP/1.1" 200 OK
+arquitectura_api-service_1  | 2026-11-28T17:28:59.885846908Z INFO:     127.0.0.1:55854 - "GET /health HTTP/1.1" 200 OK
+arquitectura_api-service_1  | 2026-11-28T17:29:05.772243106Z INFO:     172.18.0.8:49142 - "GET /metrics HTTP/1.1" 200 OK
+arquitectura_api-service_1  | 2026-11-28T17:29:14.991876254Z INFO:     127.0.0.1:44242 - "GET /health HTTP/1.1" 200 OK
+
+======================================================================
+## rabbitmq
+
+sirif-rabbitmq  | 2026-11-28T17:27:57.446716039Z 2026-11-28 17:27:57.446124+00:00 [info] <0.640.0> Setting segment_entry_count for vhost '/' with 0 queues to '2048'[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.471339784Z 2026-11-28 17:27:57.470807+00:00 [info] <0.640.0> Starting message stores for vhost '/'[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.471745302Z 2026-11-28 17:27:57.471201+00:00 [info] <0.649.0> Message store "628WB79CIFDYO9LJI6DKMI09L/msg_store_transient": using rabbit_msg_store_ets_index to provide index[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.474559574Z 2026-11-28 17:27:57.474059+00:00 [info] <0.640.0> Started message store of type transient for vhost '/'[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.474771253Z 2026-11-28 17:27:57.474482+00:00 [info] <0.653.0> Message store "628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent": using rabbit_msg_store_ets_index to provide index[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.477931407Z [38;5;214m2026-11-28 17:27:57.477445+00:00 [warning] <0.653.0> Message store "628WB79CIFDYO9LJI6DKMI09L/msg_store_persistent": rebuilding indices from scratch[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.479135533Z 2026-11-28 17:27:57.478777+00:00 [info] <0.640.0> Started message store of type persistent for vhost '/'[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.479151970Z 2026-11-28 17:27:57.478981+00:00 [info] <0.640.0> Recovering 0 queues of type rabbit_classic_queue took 31ms[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.479383394Z 2026-11-28 17:27:57.479027+00:00 [info] <0.640.0> Recovering 0 queues of type rabbit_quorum_queue took 0ms[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.479392916Z 2026-11-28 17:27:57.479108+00:00 [info] <0.640.0> Recovering 0 queues of type rabbit_stream_queue took 0ms[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.509232470Z 2026-11-28 17:27:57.508469+00:00 [info] <0.254.0> Created user 'sirif'[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.514863618Z 2026-11-28 17:27:57.514075+00:00 [info] <0.254.0> Successfully set user tags for user 'sirif' to [administrator][0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.521254987Z 2026-11-28 17:27:57.520670+00:00 [info] <0.254.0> Successfully set permissions for user 'sirif' in virtual host '/' to '.*', '.*', '.*'[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.521279744Z 2026-11-28 17:27:57.520825+00:00 [info] <0.254.0> Running boot step rabbit_observer_cli defined by app rabbit[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.521289265Z 2026-11-28 17:27:57.521055+00:00 [info] <0.254.0> Running boot step rabbit_looking_glass defined by app rabbit[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.521491423Z 2026-11-28 17:27:57.521162+00:00 [info] <0.254.0> Running boot step rabbit_core_metrics_gc defined by app rabbit[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.521813853Z 2026-11-28 17:27:57.521387+00:00 [info] <0.254.0> Running boot step background_gc defined by app rabbit[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.521869679Z 2026-11-28 17:27:57.521643+00:00 [info] <0.254.0> Running boot step routing_ready defined by app rabbit[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.522047281Z 2026-11-28 17:27:57.521680+00:00 [info] <0.254.0> Running boot step pre_flight defined by app rabbit[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.522151317Z 2026-11-28 17:27:57.521775+00:00 [info] <0.254.0> Running boot step notify_cluster defined by app rabbit[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.522653754Z 2026-11-28 17:27:57.521835+00:00 [info] <0.254.0> Running boot step networking defined by app rabbit[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.522672096Z 2026-11-28 17:27:57.521867+00:00 [info] <0.254.0> Running boot step rabbit_quorum_queue_periodic_membership_reconciliation defined by app rabbit[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.522675403Z 2026-11-28 17:27:57.522022+00:00 [info] <0.254.0> Running boot step definition_import_worker_pool defined by app rabbit[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.523136647Z 2026-11-28 17:27:57.522124+00:00 [info] <0.317.0> Starting worker pool 'definition_import_pool' with 12 processes in it[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.523144866Z 2026-11-28 17:27:57.522797+00:00 [info] <0.254.0> Running boot step cluster_name defined by app rabbit[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.523332290Z 2026-11-28 17:27:57.522916+00:00 [info] <0.254.0> Initialising internal cluster ID to 'rabbitmq-cluster-id-ZS4XFCaNZcW19Coxi3kunA'[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.529963904Z 2026-11-28 17:27:57.529347+00:00 [info] <0.254.0> Running boot step virtual_host_reconciliation defined by app rabbit[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.530149724Z 2026-11-28 17:27:57.529808+00:00 [info] <0.254.0> Running boot step direct_client defined by app rabbit[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.530253760Z 2026-11-28 17:27:57.529965+00:00 [info] <0.254.0> Running boot step rabbit_federation_exchange defined by app rabbitmq_federation[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.530731541Z 2026-11-28 17:27:57.530198+00:00 [info] <0.254.0> Running boot step rabbit_management_load_definitions defined by app rabbitmq_management[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.530969781Z 2026-11-28 17:27:57.530615+00:00 [info] <0.698.0> Resetting node maintenance status[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.837928118Z [38;5;214m2026-11-28 17:27:57.837376+00:00 [warning] <0.727.0> Deprecated features: `management_metrics_collection`: Feature `management_metrics_collection` is deprecated.[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.837956918Z [38;5;214m2026-11-28 17:27:57.837376+00:00 [warning] <0.727.0> By default, this feature can still be used for now.[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.837958618Z [38;5;214m2026-11-28 17:27:57.837376+00:00 [warning] <0.727.0> Its use will not be permitted by default in a future minor RabbitMQ version and the feature will be removed from a future major RabbitMQ version; actual versions to be determined.[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.837959618Z [38;5;214m2026-11-28 17:27:57.837376+00:00 [warning] <0.727.0> To continue using this feature when it is not permitted by default, set the following parameter in your configuration:[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.837961918Z [38;5;214m2026-11-28 17:27:57.837376+00:00 [warning] <0.727.0>     "deprecated_features.permit.management_metrics_collection = true"[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.837963318Z [38;5;214m2026-11-28 17:27:57.837376+00:00 [warning] <0.727.0> To test RabbitMQ as if the feature was removed, set this in your configuration:[0m
+sirif-rabbitmq  | 2026-11-28T17:27:57.837965118Z [38;5;214m2026-11-28 17:27:57.837376+00:00 [warning] <0.727.0>     "deprecated_features.permit.management_metrics_collection = false"[0m
+sirif-rabbitmq  | 2026-11-28T17:28:02.380944344Z 2026-11-28 17:28:02.380591+00:00 [info] <0.764.0> Management plugin: HTTP (non-TLS) listener started on port 15672[0m
+sirif-rabbitmq  | 2026-11-28T17:28:02.381026544Z 2026-11-28 17:28:02.380753+00:00 [info] <0.794.0> Statistics database started.[0m
+sirif-rabbitmq  | 2026-11-28T17:28:02.381120044Z 2026-11-28 17:28:02.380818+00:00 [info] <0.793.0> Starting worker pool 'management_worker_pool' with 3 processes in it[0m
+sirif-rabbitmq  | 2026-11-28T17:28:02.390002644Z 2026-11-28 17:28:02.389646+00:00 [info] <0.812.0> Prometheus metrics: HTTP (non-TLS) listener started on port 15692[0m
+sirif-rabbitmq  | 2026-11-28T17:28:02.390024244Z 2026-11-28 17:28:02.389795+00:00 [info] <0.698.0> Ready to start client connection listeners[0m
+sirif-rabbitmq  | 2026-11-28T17:28:02.392126144Z 2026-11-28 17:28:02.391723+00:00 [info] <0.856.0> started TCP listener on [::]:5672[0m
+sirif-rabbitmq  | 2026-11-28T17:28:02.503277344Z  completed with 5 plugins.
+sirif-rabbitmq  | 2026-11-28T17:28:02.503294944Z 2026-11-28 17:28:02.502936+00:00 [info] <0.698.0> Server startup complete; 5 plugins started.[0m
+sirif-rabbitmq  | 2026-11-28T17:28:02.503296644Z 2026-11-28 17:28:02.502936+00:00 [info] <0.698.0>  * rabbitmq_prometheus[0m
+sirif-rabbitmq  | 2026-11-28T17:28:02.503297844Z 2026-11-28 17:28:02.502936+00:00 [info] <0.698.0>  * rabbitmq_federation[0m
+sirif-rabbitmq  | 2026-11-28T17:28:02.503298544Z 2026-11-28 17:28:02.502936+00:00 [info] <0.698.0>  * rabbitmq_management[0m
+sirif-rabbitmq  | 2026-11-28T17:28:02.503299344Z 2026-11-28 17:28:02.502936+00:00 [info] <0.698.0>  * rabbitmq_management_agent[0m
+sirif-rabbitmq  | 2026-11-28T17:28:02.503301044Z 2026-11-28 17:28:02.502936+00:00 [info] <0.698.0>  * rabbitmq_web_dispatch[0m
+sirif-rabbitmq  | 2026-11-28T17:28:02.570992744Z 2026-11-28 17:28:02.570572+00:00 [info] <0.9.0> Time to start RabbitMQ: 20332 ms[0m
+sirif-rabbitmq  | 2026-11-28T17:28:03.744980344Z 2026-11-28 17:28:03.744613+00:00 [info] <0.863.0> accepting AMQP connection <0.863.0> (172.18.0.11:59386 -> 172.18.0.4:5672)[0m
+sirif-rabbitmq  | 2026-11-28T17:28:03.747367644Z 2026-11-28 17:28:03.747017+00:00 [info] <0.863.0> connection <0.863.0> (172.18.0.11:59386 -> 172.18.0.4:5672): user 'sirif' authenticated and granted access to vhost '/'[0m
+sirif-rabbitmq  | 2026-11-28T17:28:05.761592975Z 2026-11-28 17:28:05.761166+00:00 [info] <0.889.0> accepting AMQP connection <0.889.0> (172.18.0.14:36492 -> 172.18.0.4:5672)[0m
+sirif-rabbitmq  | 2026-11-28T17:28:05.763934615Z 2026-11-28 17:28:05.763555+00:00 [info] <0.889.0> connection <0.889.0> (172.18.0.14:36492 -> 172.18.0.4:5672): user 'sirif' authenticated and granted access to vhost '/'[0m
+sirif-rabbitmq  | 2026-11-28T17:28:06.327642128Z 2026-11-28 17:28:06.327121+00:00 [info] <0.1087.0> accepting AMQP connection <0.1087.0> (172.18.0.13:54908 -> 172.18.0.4:5672)[0m
+sirif-rabbitmq  | 2026-11-28T17:28:06.329903566Z 2026-11-28 17:28:06.329572+00:00 [info] <0.1087.0> connection <0.1087.0> (172.18.0.13:54908 -> 172.18.0.4:5672): user 'sirif' authenticated and granted access to vhost '/'[0m
+sirif-rabbitmq  | 2026-11-28T17:28:06.348338977Z 2026-11-28 17:28:06.348017+00:00 [info] <0.1107.0> accepting AMQP connection <0.1107.0> (172.18.0.12:53460 -> 172.18.0.4:5672)[0m
+sirif-rabbitmq  | 2026-11-28T17:28:06.350940021Z 2026-11-28 17:28:06.350579+00:00 [info] <0.1107.0> connection <0.1107.0> (172.18.0.12:53460 -> 172.18.0.4:5672): user 'sirif' authenticated and granted access to vhost '/'[0m
+

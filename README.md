@@ -40,7 +40,7 @@ SIRIF clasifica el nivel de riesgo (**BAJO / MEDIO / ALTO**) por comuna y lo pro
 | **README** | Este archivo: arquitectura, ejecución, configuración, pruebas, modelo, CI/CD y enlaces |
 | **Dockerfile / configuraciones** | 7 `Dockerfile`, `docker-compose.yml`, `gateway/nginx.conf`, `monitoring/prometheus.yml`, `monitoring/grafana/provisioning/`, `db/init.sql`, `.env.example` ([ver detalle](#dockerfile-y-configuraciones)) |
 | **Pruebas** | 108 pruebas automatizadas en 7 suites + evidencia de ejecución en `docs/evidencias/pruebas-2026-11-28.txt` ([ver detalle](#pruebas)) |
-| **Documentación** | `docs/superpowers/specs/` (2 diseños), `docs/superpowers/plans/` (4 planes), `datos_externos/conaf/README.md` ([ver detalle](#documentación)) |
+| **Documentación** | `docs/superpowers/specs/` (2 diseños), `docs/superpowers/plans/` (4 planes), `docs/api/` (OpenAPI de los 3 servicios), `datos_externos/conaf/README.md` ([ver detalle](#documentación)) |
 | **Modelo o referencia** | `risk-service/modelo_riesgo.pkl` (regional), `risk-service/modelo_riesgo_comunal.pkl` (comunal, generado), `ml-pipeline/train_honesto.py`, `ml-pipeline/train_comunal.py` y metadatos JSON ([ver detalle](#modelo-y-referencia)) |
 | **CI/CD** | `.github/workflows/ci.yml` (pruebas + build) y `.github/workflows/deploy.yml` (despliegue a EC2) ([ver detalle](#cicd)) |
 | **Evidencias** | Capturas de la interfaz y de observabilidad en `docs/evidencias/`, ficha PDF real, registro de pruebas y metadatos del modelo ([ver detalle](#evidencias)) |
@@ -179,7 +179,8 @@ arquitectura/
 ├── docs/
 │   ├── superpowers/specs/         # diseños técnicos
 │   ├── superpowers/plans/         # planes de implementación
-│   └── evidencias/                # capturas de UI, ficha PDF, script y pruebas
+│   ├── api/                       # OpenAPI de api/data/risk + generador
+│   └── evidencias/                # capturas de UI, ficha PDF, logs y pruebas
 ├── datos_externos/conaf/          # scripts de construcción del dataset + README
 ├── docker-compose.yml
 ├── .env.example
@@ -373,6 +374,19 @@ Esos scripts no se versionan; se regeneran con Playwright + Chrome contra el sta
 | `docs/superpowers/plans/refactorizacion-pendiente.md` | Backlog de refactorización sobre el código actual |
 | `docs/superpowers/plans/analisis-post-ejecucion.md` | Diagnóstico posterior a la ejecución del roadmap |
 | `datos_externos/conaf/README.md` | Construcción del dataset CONAF (filas, columnas, scripts) |
+| `docs/api/README.md` + `openapi-*.json` | Contrato OpenAPI de `api-service` (36 rutas), `data-service` (9) y `risk-service` (3), con generador reproducible |
+
+### API (OpenAPI)
+
+Las especificaciones estáticas están versionadas en `docs/api/` para revisar el contrato sin levantar el stack:
+
+| Servicio | Especificación | Rutas |
+|---|---|---|
+| `api-service` | `docs/api/openapi-api-service.json` | 36 |
+| `data-service` | `docs/api/openapi-data-service.json` | 9 |
+| `risk-service` | `docs/api/openapi-risk-service.json` | 3 |
+
+Regeneración: `python docs/api/generar_openapi.py`. En vivo, cada servicio FastAPI expone `/docs` y `/openapi.json` dentro de la red Docker (el gateway no los publica).
 
 Complementos en el propio código:
 
@@ -449,6 +463,8 @@ Se ejecuta en `push` y `pull_request` a `main` y `develop`:
 3. Ejecuta las 7 suites de pruebas (`shared`, `ml-pipeline`, `data-service`, `risk-service`, `api-service`, `monitoring-service`, `notification-service`).
 4. Verifica que `docker compose build` construya todas las imágenes.
 
+Evidencia: la ejecución de `main` en `b9a63f5` terminó **verde** (7 suites + build de imágenes) en [Actions](https://github.com/dancingrat123/arquitectura/actions).
+
 ### Despliegue continuo — `.github/workflows/deploy.yml`
 
 En cada `push` a `main`, `appleboy/ssh-action` entra por SSH a la instancia EC2 configurada y ejecuta:
@@ -461,6 +477,8 @@ docker image prune -f
 ```
 
 Secretos requeridos en GitHub: `EC2_HOST`, `EC2_USER`, `EC2_SSH_KEY`.
+
+> El job de despliegue depende de que la instancia EC2 esté encendida y accesible. Si el host está detenido, el paso SSH falla aunque el CI esté verde; en ese caso hay que iniciar la instancia y relanzar el workflow.
 
 > El despliegue usa el certificado autofirmado del gateway. Para producción real se recomienda una CA válida (p. ej. Let's Encrypt) y habilitar HSTS.
 
@@ -495,6 +513,7 @@ Los archivos se pueden abrir a tamaño completo desde cada enlace.
 |---|---|---|
 | Capturas de interfaz | `docs/evidencias/01-…09-*.png` | UI real del stack en tema oscuro y vista móvil |
 | Observabilidad | `docs/evidencias/10-grafana.png`, `11-rabbitmq-overview.png`, `12-rabbitmq-colas.png` | Métricas en Grafana y colas/consumidores en RabbitMQ |
+| Logs del stack | `docs/evidencias/logs-stack-2026-11-28.txt` | Arranque, bootstrap de datos, heartbeat y consumidores con timestamps |
 | Script de captura | `docs/evidencias/capturar_evidencias.py` | Reproduce las capturas, la ficha PDF y las vistas de monitoreo |
 | Ejecución de pruebas | `docs/evidencias/pruebas-2026-11-28.txt` | 108 pruebas en 7 suites, 0 fallos |
 | Ficha PDF real | `docs/evidencias/ficha-riesgo-quilpue.pdf` | Reporte generado por `GET /api/reportes/quilpue/pdf` con el mapa de distritos corregido |
