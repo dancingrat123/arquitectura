@@ -1,0 +1,27 @@
+SIRIF - Evidencia de ejecucion de pruebas
+Generado: 2026-11-28 13:26
+Entorno: 3.15.0 / pytest
+==============================================================
+
+## shared  ->  python -m pytest -q
+3 passed in 0.01s
+
+## ml-pipeline  ->  python -m pytest -q
+8 passed in 1.85s
+
+## data-service  ->  python -m pytest tests -q
+17 passed  (tests/test_main.py: 7, tests/test_parsers.py: 10)
+
+## risk-service  ->  python -m pytest -q
+18 passed in 0.90s
+
+## api-service  ->  python -m pytest -q
+53 passed in 1.31s
+
+## monitoring-service  ->  python -m pytest -q
+3 passed in 0.13s
+
+## notification-service  ->  python -m pytest -q
+6 passed in 0.06s
+
+==============================================================
