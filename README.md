@@ -79,6 +79,75 @@ flowchart LR
     GRAF[grafana] --> PROM
 ```
 
+### Diagrama de despliegue
+
+Vista de infraestructura: qué corre en la instancia EC2, qué se publica al host, qué queda en la red interna de Docker, qué volúmenes persisten y cómo llega el código desde GitHub.
+
+```mermaid
+flowchart TB
+    DEV[Equipo · push a main] --> GH[GitHub · repositorio]
+    GH --> CI[GitHub Actions · CI<br/>7 suites + build]
+    GH --> CD[GitHub Actions · Deploy]
+    CD -->|SSH · git pull · compose up| EC2
+
+    USER[Navegador] -->|HTTPS 9443| GW
+
+    subgraph EC2["EC2 · host Docker (docker compose)"]
+        direction TB
+        GW[gateway · Nginx<br/>host 9080 / 9443]
+
+        subgraph APP["Red interna Docker (solo expose)"]
+            direction LR
+            FE[frontend :80]
+            API[api-service ×2 :8000]
+            DATA[data-service :8000]
+            RISK[risk-service :8001]
+            MON[monitoring-service]
+            NOTIF[notification-service]
+            MQ[rabbitmq]
+            DB[(db · PostgreSQL + PostGIS)]
+            PROM[prometheus<br/>127.0.0.1:9090]
+            GRAF[grafana<br/>127.0.0.1:3000]
+        end
+
+        subgraph VOLS["Volúmenes persistentes"]
+            direction LR
+            VDB[(db_data)]
+            VGRAF[(grafana_data)]
+            VTLS[(gateway_tls<br/>certificado autofirmado)]
+        end
+    end
+
+    GW --> FE
+    GW --> API
+    API --> DATA
+    API --> RISK
+    API --> DB
+    API --> MQ
+    MON --> DATA
+    MON --> MQ
+    MQ --> NOTIF
+    NOTIF --> DB
+    RISK --> MODEL[(modelos .pkl)]
+    DATA -->|batch| OM[Open-Meteo]
+    FE -->|tiles| OSM[OpenStreetMap]
+    PROM -.-> API
+    PROM -.-> DATA
+    PROM -.-> RISK
+    GRAF --> PROM
+    DB --- VDB
+    GRAF --- VGRAF
+    GW --- VTLS
+    OPS[Operador] -.->|127.0.0.1:3000 / 9090 / 15672| GRAF
+```
+
+Puntos clave del despliegue:
+
+- Solo `gateway` publica puertos al host (`9080` HTTP y `9443` HTTPS); el resto de los servicios usa `expose` y vive en la red interna de Docker.
+- Prometheus, Grafana y el panel de RabbitMQ se enlazan a `127.0.0.1` (no accesibles desde internet).
+- La persistencia está en tres volúmenes: `db_data`, `grafana_data` y `gateway_tls`; el certificado TLS se genera en el primer arranque y no se versiona.
+- El CD entra por SSH a EC2, actualiza el clon y reconstruye los contenedores; el CI valida pruebas y build antes del merge.
+
 ### Servicios
 
 | Servicio | Descripción | Puerto interno |
