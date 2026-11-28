@@ -43,7 +43,7 @@ SIRIF clasifica el nivel de riesgo (**BAJO / MEDIO / ALTO**) por comuna y lo pro
 | **Documentación** | `docs/superpowers/specs/` (2 diseños), `docs/superpowers/plans/` (4 planes), `datos_externos/conaf/README.md` ([ver detalle](#documentación)) |
 | **Modelo o referencia** | `risk-service/modelo_riesgo.pkl` (regional), `risk-service/modelo_riesgo_comunal.pkl` (comunal, generado), `ml-pipeline/train_honesto.py`, `ml-pipeline/train_comunal.py` y metadatos JSON ([ver detalle](#modelo-y-referencia)) |
 | **CI/CD** | `.github/workflows/ci.yml` (pruebas + build) y `.github/workflows/deploy.yml` (despliegue a EC2) ([ver detalle](#cicd)) |
-| **Evidencias** | `docs/evidencias/pruebas-2026-11-28.txt`, `ml-pipeline/matriz_correlacion.png`, `ml-pipeline/model_metadata*.json` ([ver detalle](#evidencias)) |
+| **Evidencias** | Capturas de la interfaz en `docs/evidencias/`, ficha PDF real, registro de pruebas y metadatos del modelo ([ver detalle](#evidencias)) |
 | **Enlaces** | Repositorio, servicios locales, fuentes de datos y documentación técnica ([ver detalle](#enlaces)) |
 
 ---
@@ -179,7 +179,7 @@ arquitectura/
 ├── docs/
 │   ├── superpowers/specs/         # diseños técnicos
 │   ├── superpowers/plans/         # planes de implementación
-│   └── evidencias/                # evidencia de ejecución de pruebas
+│   └── evidencias/                # capturas de UI, ficha PDF, script y pruebas
 ├── datos_externos/conaf/          # scripts de construcción del dataset + README
 ├── docker-compose.yml
 ├── .env.example
@@ -358,7 +358,7 @@ Durante el desarrollo se ejecutaron verificaciones E2E con **Playwright** contra
 - 14 comprobaciones de la capa base (tiles reales, fallback sin red, encuadre, crédito OSM, consola limpia).
 - Comprobación responsive a 390×844 sin desbordes horizontales.
 
-Esos scripts no se versionan; se regeneran con Playwright + Chrome contra el stack local.
+Esos scripts no se versionan; se regeneran con Playwright + Chrome contra el stack local. El script de captura (`docs/evidencias/capturar_evidencias.py`) y las capturas resultantes sí están versionados (ver [Evidencias](#evidencias)).
 
 ---
 
@@ -468,19 +468,45 @@ Secretos requeridos en GitHub: `EC2_HOST`, `EC2_USER`, `EC2_SSH_KEY`.
 
 ## Evidencias
 
+### Capturas de la interfaz
+
+Capturadas contra el stack en ejecución (`https://localhost:9443`, tema oscuro, 1600×1000; móvil 390×844).
+
+| Vista | Captura |
+|---|---|
+| Mapa público (sin sesión) | <a href="docs/evidencias/01-mapa-publico.png"><img src="docs/evidencias/01-mapa-publico.png" width="760" alt="Mapa público"></a> |
+| Pantalla de acceso | <a href="docs/evidencias/02-login.png"><img src="docs/evidencias/02-login.png" width="760" alt="Login"></a> |
+| Diagnóstico (admin) | <a href="docs/evidencias/03-diagnostico.png"><img src="docs/evidencias/03-diagnostico.png" width="760" alt="Diagnóstico"></a> |
+| Ranking y tabla | <a href="docs/evidencias/04-ranking.png"><img src="docs/evidencias/04-ranking.png" width="760" alt="Ranking"></a> |
+| Simulador | <a href="docs/evidencias/05-simulador.png"><img src="docs/evidencias/05-simulador.png" width="760" alt="Simulador"></a> |
+| Asistente determinista | <a href="docs/evidencias/06-asistente.png"><img src="docs/evidencias/06-asistente.png" width="760" alt="Asistente"></a> |
+| Operación territorial | <a href="docs/evidencias/07-operacion.png"><img src="docs/evidencias/07-operacion.png" width="760" alt="Operación"></a> |
+| Centro de actividad | <a href="docs/evidencias/08-alertas.png"><img src="docs/evidencias/08-alertas.png" width="760" alt="Notificaciones"></a> |
+| Vista móvil (390×844) | <a href="docs/evidencias/09-movil-mapa.png"><img src="docs/evidencias/09-movil-mapa.png" width="300" alt="Móvil"></a> |
+
+Los archivos se pueden abrir a tamaño completo desde cada enlace.
+
+### Artefactos
+
 | Evidencia | Archivo | Qué demuestra |
 |---|---|---|
+| Capturas de interfaz | `docs/evidencias/01-…09-*.png` | UI real del stack en tema oscuro y vista móvil |
+| Script de captura | `docs/evidencias/capturar_evidencias.py` | Reproduce las capturas y la ficha PDF con Playwright |
 | Ejecución de pruebas | `docs/evidencias/pruebas-2026-11-28.txt` | 108 pruebas en 7 suites, 0 fallos |
+| Ficha PDF real | `docs/evidencias/ficha-riesgo-quilpue.pdf` | Reporte generado por `GET /api/reportes/quilpue/pdf` con el mapa de distritos corregido |
 | Métricas del modelo regional | `ml-pipeline/model_metadata.json` | AUC, AP, Brier, features, umbrales y fecha de entrenamiento |
 | Métricas del modelo comunal | `ml-pipeline/model_metadata_comunal.json` | Validación temporal/espacial, prevalencia y curvas |
 | Análisis exploratorio | `ml-pipeline/matriz_correlacion.png` | Correlación entre variables climáticas y ocurrencia |
 | Construcción del dataset | `datos_externos/conaf/README.md` | Filas por archivo y linaje desde IDE Minagri |
 | Salida del modelo en vivo | `GET /api/riesgo/todas` | 38 zonas con `version_modelo` y probabilidad (requiere stack activo) |
 
-Reproducir la evidencia de pruebas:
+Reproducir la evidencia:
 
 ```bash
-cd api-service && python -m pytest -q      # y análogamente en cada módulo
+docker compose --compatibility up -d --build
+pip install playwright httpx
+python docs/evidencias/capturar_evidencias.py   # capturas + ficha PDF
+cd api-service && python -m pytest -q           # y análogamente en cada módulo
 ```
 
 ---
