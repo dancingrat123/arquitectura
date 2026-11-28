@@ -1,6 +1,6 @@
 # SIRIF — Sistema Inteligente de Riesgo de Incendios Forestales
 
-[![CI](https://github.com/frfernandini/arquitectura/actions/workflows/ci.yml/badge.svg)](https://github.com/frfernandini/arquitectura/actions/workflows/ci.yml)
+[![CI](https://github.com/dancingrat123/arquitectura/actions/workflows/ci.yml/badge.svg)](https://github.com/dancingrat123/arquitectura/actions/workflows/ci.yml)
 
 Proyecto semestral de la asignatura **Arquitectura de Sistemas de Inteligencia Artificial (ITY1102)**.
 
@@ -565,15 +565,15 @@ El navegador mostrará una advertencia de certificado no confiable (esperable en
 
 | Recurso | URL |
 |---|---|
-| Repositorio | https://github.com/frfernandini/arquitectura |
+| Repositorio | https://github.com/dancingrat123/arquitectura |
 | Frontend local | https://localhost:9443 |
 | API de riesgo local | https://localhost:9443/api/riesgo/todas |
 | Documentación OpenAPI | `http://<servicio>:8000/docs` dentro de la red Docker, o `risk-service:8001/docs` |
 | Grafana local | http://127.0.0.1:3000 |
 | Prometheus local | http://127.0.0.1:9090 |
 | RabbitMQ local | http://127.0.0.1:15672 |
-| CI | https://github.com/frfernandini/arquitectura/actions/workflows/ci.yml |
-| CD | https://github.com/frfernandini/arquitectura/actions/workflows/deploy.yml |
+| CI | https://github.com/dancingrat123/arquitectura/actions/workflows/ci.yml |
+| CD | https://github.com/dancingrat123/arquitectura/actions/workflows/deploy.yml |
 
 Fuentes de datos y documentación externa:
 
